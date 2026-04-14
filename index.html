@@ -1,402 +1,979 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRẮC NGHIỆM ĐẠI HỘI XIV</title>
-    <style>
-        :root {
-            --primary-color: #d32f2f;
-            --secondary-color: #1976d2;
-            --bg-color: #f5f5f5;
-            --text-color: #333;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            min-height: 100vh;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            text-align: center;
-            font-size: 1.5rem;
-            text-transform: uppercase;
-        }
-
-        .menu-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            background: var(--secondary-color);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .cluster-btn {
-            background: #e0e0e0;
-            color: #333;
-            transition: 0.3s;
-        }
-
-        .cluster-btn.active {
-            background: #ffc107;
-            color: black;
-            border: 2px solid #ffa000;
-        }
-
-        .hidden { display: none; }
-
-        /* Modal Nội dung ôn tập */
-        #content-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .exit-btn {
-            position: sticky;
-            top: 0;
-            background: var(--primary-color);
-            color: white;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        /* Trắc nghiệm */
-        .question-box { margin-top: 20px; }
-        .answer-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: white;
-            text-align: left;
-            font-size: 1rem;
-        }
-
-        .correct { background-color: #4caf50 !important; color: white; }
-        .wrong { background-color: #f44336 !important; color: white; }
-
-        .timer-bar {
-            height: 5px;
-            background: #4caf50;
-            width: 100%;
-            transition: linear;
-        }
-
-        .info-text {
-            background: #fff3e0;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container" id="main-screen">
-    <h1>TRẮC NGHIỆM ĐẠI HỘI XIV</h1>
-    
-    <button class="menu-btn" onclick="showSubMenu()">NỘI DUNG ÔN TẬP</button>
-    <div id="sub-menu-on-tap" class="hidden" style="padding-left: 20px;">
-        <button class="menu-btn" style="background:#546e7a" onclick="showQuickReview()">Từ khóa Ôn tập nhanh</button>
-        <button class="menu-btn" style="background:#546e7a" onclick="window.open('ĐƯỜNG_LINK_GOOGLE_DRIVE_CỦA_BẠN', '_blank')">TOÀN BỘ TÀI LIỆU ÔN TẬP</button>
-    </div>
-
-    <hr>
-    <h3>LUYỆN TRẮC NGHIỆM</h3>
-    <div id="cluster-selection">
-        <button class="menu-btn cluster-btn" onclick="toggleCluster(1, this)">Cụm 1: Đại hội XIV và tư tưởng nền</button>
-        <button class="menu-btn cluster-btn" onclick="toggleCluster(2, this)">Cụm 2: Phát triển đất nước 2026-2030</button>
-        <button class="menu-btn cluster-btn" onclick="toggleCluster(3, this)">Cụm 3: Kỷ nguyên mới, xây dựng Đảng</button>
-        <button class="menu-btn cluster-btn" onclick="toggleCluster(4, this)">Cụm 4: KHCN, Đổi mới sáng tạo</button>
-        <button class="menu-btn cluster-btn" onclick="toggleCluster(5, this)">Cụm 5: Quốc phòng, An ninh, CAND</button>
-    </div>
-
-    <div id="selection-info" class="info-text">Vui lòng chọn cụm nội dung ôn tập.</div>
-
-    <div id="time-selection">
-        <p><b>Chọn thời gian mỗi câu:</b></p>
-        <label><input type="radio" name="timer" value="0"> Không giới hạn</label><br>
-        <label><input type="radio" name="timer" value="5"> 05 giây/câu</label><br>
-        <label><input type="radio" name="timer" value="7"> 07 giây/câu</label><br>
-        <label><input type="radio" name="timer" value="10"> 10 giây/câu</label>
-    </div>
-
-    <button class="menu-btn" style="background: #2e7d32; margin-top: 20px;" onclick="startTraining()">BẮT ĐẦU ÔN TẬP</button>
-    
-    <button class="menu-btn" style="background: #e65100;" onclick="startMockTest()">THI THỬ (25 CÂU)</button>
-</div>
-
-<div id="content-modal" class="hidden">
-    <button class="exit-btn" onclick="closeModal()">THOÁT</button>
-    <div id="review-text-content">
-        <h3>Cụm 1: Đại hội XIV và tư tưởng nền</h3>
-        <ul>
-            <li>Đại hội diễn ra khi nào?</li>
-            <li>Dấu mốc của cách mạng Việt Nam</li>
-            <li>Bước chuyển: từ “tạo nền tảng” sang “phát triển bứt phá”</li>
-            <li>... (Bạn copy toàn bộ nội dung từ khóa vào đây) ...</li>
-        </ul>
-        </div>
-</div>
-
-<div class="container hidden" id="quiz-screen">
-    <div id="quiz-header">
-        <div id="timer-display" style="font-weight: bold; color: red;"></div>
-        <div class="timer-bar" id="timer-bar"></div>
-        <p id="question-number"></p>
-    </div>
-    <div class="question-box">
-        <h3 id="question-text"></h3>
-        <div id="answer-list"></div>
-    </div>
-</div>
-
-<div class="container hidden" id="result-screen">
-    <h1>KẾT QUẢ</h1>
-    <div id="result-detail" style="font-size: 1.2rem; text-align: center; margin: 20px 0;"></div>
-    <div id="result-message" style="font-weight: bold; text-align: center; color: var(--primary-color);"></div>
-    <button class="menu-btn" onclick="location.reload()">QUAY LẠI TRANG CHỦ</button>
-</div>
-
-<script>
-    // DỮ LIỆU NGUỒN (Bạn hãy copy từ Excel vào đây)
-    // Cấu trúc: cluster (1-5), q (câu hỏi), a (đáp án đúng), o (3 đáp án sai)
-    const rawData = [
-        { cluster: 1, q: "Đại hội XIV diễn ra vào thời gian nào?", a: "Đầu năm 2026", o: ["Cuối năm 2025", "Đầu năm 2025", "Giữa năm 2026"] },
-        { cluster: 1, q: "Câu hỏi số 2...", a: "Đáp án đúng", o: ["Sai 1", "Sai 2", "Sai 3"] },
-        // ... Tiếp tục nhập đủ 150 câu theo đúng cấu trúc này
-    ];
-
-    let selectedClusters = [];
-    let currentQuestions = [];
-    let currentIdx = 0;
-    let score = 0;
-    let timeoutCount = 0;
-    let timerInterval;
-    let timePerQuestion = 0;
-    let isMockTest = false;
-
-    function showSubMenu() {
-        document.getElementById('sub-menu-on-tap').classList.toggle('hidden');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>TRẮC NGHIỆM ĐẠI HỘI XIV</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(255,255,255,.95);
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #1d4ed8;
+      --primary-2: #3b82f6;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --soft: #e2e8f0;
+      --selected: #dbeafe;
+      --shadow: 0 18px 40px rgba(15,23,42,.18);
+      --radius: 22px;
     }
 
-    function showQuickReview() {
-        document.getElementById('content-modal').classList.remove('hidden');
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: var(--text); background:
+      radial-gradient(circle at top right, rgba(59,130,246,.35), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(14,165,233,.25), transparent 24%),
+      linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100%; }
+
+    body { padding: 14px; }
+    .app { max-width: 960px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      padding: 20px 16px;
+      background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(219,234,254,.96));
+      border: 1px solid rgba(59,130,246,.15);
+    }
+    .title { font-size: 28px; font-weight: 800; margin: 0 0 8px; text-align: center; color: #0b1f4d; }
+    .subtitle { margin: 0; color: var(--muted); text-align: center; line-height: 1.5; }
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    button, .btn {
+      border: 0;
+      width: 100%;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: transform .15s ease, box-shadow .15s ease, background .2s ease, color .2s ease;
+    }
+    button:active, .btn:active { transform: scale(.99); }
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 24px rgba(29,78,216,.24);
+    }
+    .btn-secondary { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .btn-light { background: #f8fafc; color: #0f172a; border: 1px solid #dbe4f0; }
+    .btn-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .btn-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .btn-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    .section-title { margin: 0 0 12px; font-size: 20px; font-weight: 800; color: #0b1f4d; }
+    .section-note { margin: 8px 0 0; color: var(--muted); line-height: 1.5; }
+
+    .cluster-btn {
+      text-align: left;
+      background: #fff;
+      border: 1px solid #dbe4f0;
+      color: #0f172a;
+      min-height: 82px;
+    }
+    .cluster-btn .small { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+    .cluster-btn.active {
+      background: linear-gradient(135deg, #dbeafe, #eff6ff);
+      border-color: #60a5fa;
+      color: #0b1f4d;
+      box-shadow: 0 12px 30px rgba(59,130,246,.16);
+    }
+
+    .time-options { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .time-chip {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 2px solid #dbe4f0;
+      background: #fff;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .time-chip input { display: none; }
+    .time-chip.active { border-color: #3b82f6; background: #eff6ff; color: #1e3a8a; }
+
+    .summary-box {
+      background: #f8fafc;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 14px;
+      border-radius: 16px;
+      line-height: 1.55;
+      color: #1e293b;
+    }
+
+    .toolbar { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .hidden { display: none !important; }
+
+    .quiz-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .timer { background: #fff7ed; color: #c2410c; }
+    .progress-bar {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #06b6d4); transition: width .25s ease; }
+
+    .question-card {
+      background: linear-gradient(135deg, #ffffff, #f8fbff);
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .question-number { font-size: 13px; font-weight: 800; color: #2563eb; margin-bottom: 8px; }
+    .question-text { font-size: 18px; font-weight: 700; line-height: 1.5; }
+
+    .answers { display: grid; gap: 10px; }
+    .answer {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border: 2px solid #dbe4f0;
+      border-radius: 18px;
+      padding: 14px 14px 14px 52px;
+      position: relative;
+      line-height: 1.45;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .answer-label {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #eff6ff; color: #1d4ed8; font-size: 13px; font-weight: 800;
+    }
+    .answer.correct { background: #f0fdf4; border-color: #22c55e; color: #166534; }
+    .answer.correct .answer-label { background: #22c55e; color: #fff; }
+    .answer.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+    .answer.wrong .answer-label { background: #ef4444; color: #fff; }
+    .answer.disabled { pointer-events: none; opacity: .92; }
+
+    .result-score {
+      font-size: 34px;
+      font-weight: 900;
+      text-align: center;
+      color: #0b1f4d;
+      margin: 4px 0 10px;
+    }
+    .result-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      margin-bottom: 12px;
+    }
+    .stat {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    .stat strong { display: block; font-size: 26px; margin-bottom: 4px; }
+    .stat span { color: var(--muted); font-weight: 700; font-size: 13px; }
+
+    .message-box {
+      border-radius: 18px;
+      padding: 14px;
+      line-height: 1.55;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .message-ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .message-warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 1000;
+      display: none; align-items: center; justify-content: center; padding: 12px;
+    }
+    .modal {
+      background: #fff;
+      width: min(860px, 100%);
+      max-height: 90vh;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(15,23,42,.35);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 16px; background: linear-gradient(135deg, #eff6ff, #f8fafc); border-bottom: 1px solid #dbe4f0;
+    }
+    .modal-title { margin: 0; font-size: 20px; font-weight: 800; color: #0b1f4d; }
+    .modal-body { padding: 16px; overflow: auto; max-height: calc(90vh - 84px); }
+    .keyword-group { margin-bottom: 18px; }
+    .keyword-group h4 { margin: 0 0 8px; color: #1e3a8a; font-size: 18px; }
+    .keyword-group ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+    .keyword-group li { margin-bottom: 2px; }
+
+    .file-row { display: grid; gap: 10px; grid-template-columns: 1fr auto; align-items: center; }
+    .input {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 16px; padding: 13px 14px; font-size: 14px;
+      background: #fff;
+    }
+    .input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,.12); }
+    .small-note { color: #64748b; font-size: 13px; line-height: 1.5; margin-top: 8px; }
+    .footer-note { text-align: center; color: rgba(255,255,255,.88); font-size: 13px; padding: 2px 8px 8px; }
+
+    @media (max-width: 760px) {
+      .grid-2, .grid-3, .toolbar, .result-grid, .time-options, .file-row { grid-template-columns: 1fr; }
+      .title { font-size: 24px; }
+      .question-text { font-size: 17px; }
+      .answer { font-size: 14px; }
+      body { padding: 10px; }
+      .card { padding: 14px; border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="card hero">
+      <h1 class="title">TRẮC NGHIỆM ĐẠI HỘI XIV</h1>
+      <p class="subtitle">Ứng dụng HTML tối ưu cho điện thoại và máy tính bảng, hỗ trợ ôn tập theo cụm nội dung và thi thử 25 câu từ bộ 150 câu nguồn.</p>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">1. Nguồn dữ liệu và liên kết tài liệu</h2>
+      <div class="grid" style="gap:14px;">
+        <div>
+          <div class="file-row">
+            <input id="excelFile" class="input" type="file" accept=".xlsx,.xls" />
+            <button id="btnLoadExcel" class="btn btn-primary">Nạp file Excel</button>
+          </div>
+          <div class="small-note">Hãy chọn file Excel nguồn <strong>150_CauTracNghiem_DH_XIV</strong> với cấu trúc cột: TT, Câu hỏi, Đáp án 1, Đáp án 2, Đáp án 3, Đáp án 4.</div>
+        </div>
+        <div>
+          <div class="file-row">
+            <input id="driveLink" class="input" type="url" placeholder="Dán link Google Drive tài liệu ôn tập tại đây" />
+            <button id="btnSaveLink" class="btn btn-secondary">Lưu link</button>
+          </div>
+          <div class="small-note">Link này sẽ được dùng cho nút <strong>TOÀN BỘ TÀI LIỆU ÔN TẬP</strong>.</div>
+        </div>
+      </div>
+      <div id="dataStatus" class="summary-box" style="margin-top:14px;">Chưa nạp dữ liệu câu hỏi. Sau khi nạp đúng file Excel, ứng dụng sẽ sẵn sàng để ôn tập và thi thử.</div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">2. Nội dung ôn tập</h2>
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button id="btnNoiDung" class="btn btn-primary">NỘI DUNG ÔN TẬP</button>
+        <button id="btnThiThuTop" class="btn btn-warning">THI THỬ (25 câu)</button>
+      </div>
+      <div id="noiDungActions" class="grid grid-2 hidden">
+        <button id="btnTuKhoa" class="btn btn-secondary">Từ khóa Ôn tập nhanh</button>
+        <button id="btnTaiLieu" class="btn btn-light">TOÀN BỘ TÀI LIỆU ÔN TẬP</button>
+      </div>
+      <p class="section-note">Người dùng có thể mở từ khóa ôn tập nhanh hoặc truy cập toàn bộ tài liệu ôn tập qua Google Drive.</p>
+    </section>
+
+    <section id="practiceSection" class="card">
+      <h2 class="section-title">3. Luyện trắc nghiệm theo cụm</h2>
+      <div class="grid grid-2">
+        <button class="cluster-btn" data-cluster="1"><span class="small">20 câu</span>Cụm 1 (Câu 1–20) – Đại hội XIV và tư tưởng nền</button>
+        <button class="cluster-btn" data-cluster="2"><span class="small">40 câu</span>Cụm 2 (Câu 21–60) – Phát triển đất nước giai đoạn 2026–2030, tầm nhìn 2045</button>
+        <button class="cluster-btn" data-cluster="3"><span class="small">30 câu</span>Cụm 3 (Câu 61–90) – Kỷ nguyên mới, hệ giá trị mới, xây dựng Đảng và công tác cán bộ</button>
+        <button class="cluster-btn" data-cluster="4"><span class="small">18 câu</span>Cụm 4 (Câu 91–108) – Khoa học công nghệ, đổi mới sáng tạo, hạ tầng số và chính sách xã hội mới</button>
+        <button class="cluster-btn" data-cluster="5"><span class="small">42 câu</span>Cụm 5 (Câu 109–150) – Quốc phòng, an ninh, đối ngoại, CAND và bảo vệ ANTT từ cơ sở</button>
+      </div>
+
+      <div id="selectionSummary" class="summary-box" style="margin-top:14px;">Đồng chí chưa chọn cụm nội dung ôn tập.</div>
+
+      <h3 style="margin:18px 0 10px; color:#0b1f4d;">Chọn thời gian trắc nghiệm</h3>
+      <div class="time-options" id="timeOptions">
+        <label class="time-chip"><input type="radio" name="timeMode" value="0" />Không giới hạn</label>
+        <label class="time-chip"><input type="radio" name="timeMode" value="5" />05 giây/câu</label>
+        <label class="time-chip"><input type="radio" name="timeMode" value="7" />07 giây/câu</label>
+        <label class="time-chip"><input type="radio" name="timeMode" value="10" />10 giây/câu</label>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button id="btnStartPractice" class="btn btn-primary">Bắt đầu ôn tập</button>
+      </div>
+    </section>
+
+    <section id="quizSection" class="card hidden">
+      <div class="quiz-head">
+        <div class="badge" id="quizModeBadge">Ôn tập</div>
+        <div class="badge" id="quizCounter">Câu 1/1</div>
+        <div class="badge timer" id="timerBadge">Không giới hạn</div>
+      </div>
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="question-card">
+        <div class="question-number" id="questionMeta">Cụm 1</div>
+        <div class="question-text" id="questionText">Nội dung câu hỏi</div>
+      </div>
+      <div id="answers" class="answers"></div>
+      <div class="toolbar" style="margin-top:14px;">
+        <button id="btnStopQuiz" class="btn btn-danger">Kết thúc</button>
+        <button id="btnBackHome" class="btn btn-light hidden">Về trang chính</button>
+      </div>
+    </section>
+
+    <section id="resultSection" class="card hidden">
+      <h2 class="section-title">4. Kết quả</h2>
+      <div id="resultScore" class="result-score">0/0</div>
+      <div class="result-grid">
+        <div class="stat"><strong id="statCorrect">0</strong><span>Đúng</span></div>
+        <div class="stat"><strong id="statWrong">0</strong><span>Sai</span></div>
+        <div class="stat"><strong id="statTimeout">0</strong><span>Không đảm bảo thời gian</span></div>
+      </div>
+      <div id="resultMessage" class="message-box message-ok">Kết quả đánh giá</div>
+      <div id="resultDetail" class="summary-box"></div>
+      <div class="toolbar" style="margin-top:14px;">
+        <button id="btnRedo" class="btn btn-primary">Làm lại</button>
+        <button id="btnHomeFromResult" class="btn btn-light">Trang chính</button>
+      </div>
+    </section>
+
+    <p class="footer-note">Thiết kế một file HTML duy nhất, có thể mở trực tiếp trên điện thoại, máy tính bảng hoặc trình duyệt máy tính.</p>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Thông báo</h3>
+        <button id="btnCloseModal" class="btn btn-danger" style="width:auto; padding:10px 14px;">THOÁT</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    const clusterMap = {
+      1: { start: 1, end: 20, count: 20, name: 'Cụm 1' },
+      2: { start: 21, end: 60, count: 40, name: 'Cụm 2' },
+      3: { start: 61, end: 90, count: 30, name: 'Cụm 3' },
+      4: { start: 91, end: 108, count: 18, name: 'Cụm 4' },
+      5: { start: 109, end: 150, count: 42, name: 'Cụm 5' }
+    };
+
+    const keywordsHtml = `
+      <div class="keyword-group">
+        <h4>Cụm 1 (Câu 1–20) – Đại hội XIV và tư tưởng nền</h4>
+        <ul>
+          <li>Đại hội diễn ra khi nào</li>
+          <li>Dấu mốc của cách mạng Việt Nam</li>
+          <li>Bước chuyển: từ “tạo nền tảng” sang “phát triển bứt phá”</li>
+          <li>Mục tiêu tổng quát của đất nước</li>
+          <li>Mục tiêu 2045</li>
+          <li>Phương châm Đại hội</li>
+          <li>Các “kiên định”</li>
+          <li>Động lực trung tâm</li>
+          <li>Nền tảng tinh thần của xã hội</li>
+          <li>“Điểm nghẽn của điểm nghẽn”</li>
+          <li>“Then chốt của then chốt”</li>
+          <li>Dự báo thế giới, khu vực</li>
+          <li>Cơ đồ, tiềm lực, vị thế, uy tín quốc tế</li>
+          <li>Nhiệm vụ trọng tâm đầu nhiệm kỳ</li>
+        </ul>
+      </div>
+      <div class="keyword-group">
+        <h4>Cụm 2 (Câu 21–60) – Phát triển đất nước giai đoạn 2026–2030, tầm nhìn 2045</h4>
+        <ul>
+          <li>Quan điểm chỉ đạo</li>
+          <li>Định hướng phát triển đất nước</li>
+          <li>Các đột phá chiến lược</li>
+          <li>Thành phần kinh tế giữ vai trò chủ đạo</li>
+          <li>Kinh tế tư nhân là động lực quan trọng</li>
+          <li>Chỉ tiêu tăng trưởng GDP</li>
+          <li>GDP bình quân đầu người</li>
+          <li>HDI</li>
+          <li>Tỷ trọng kinh tế số</li>
+          <li>Mô hình tăng trưởng mới</li>
+          <li>Kinh tế số, xanh, tuần hoàn</li>
+          <li>Thể chế phát triển</li>
+          <li>Nhà nước pháp quyền XHCN</li>
+          <li>Giáo dục, văn hóa, con người</li>
+          <li>Chính sách xã hội, công bằng, không để ai bị bỏ lại phía sau</li>
+        </ul>
+      </div>
+      <div class="keyword-group">
+        <h4>Cụm 3 (Câu 61–90) – Kỷ nguyên mới, hệ giá trị mới, xây dựng Đảng và công tác cán bộ</h4>
+        <ul>
+          <li>Kỷ nguyên vươn mình của dân tộc</li>
+          <li>Chủ đề Đại hội XIV</li>
+          <li>Hai mốc 100 năm: 2030 và 2045</li>
+          <li>Hệ giá trị: tự chủ, tự tin, tự lực, tự cường, tự hào dân tộc</li>
+          <li>Bài học kinh nghiệm sau 40 năm đổi mới</li>
+          <li>“Dân là gốc”</li>
+          <li>Quản lý sang quản trị, kiến tạo phát triển</li>
+          <li>Phân cấp, phân quyền</li>
+          <li>Chuyển đổi số trong Đảng, kiểm tra, giám sát</li>
+          <li>Sắp xếp tổ chức bộ máy: tinh - gọn - mạnh</li>
+          <li>Nâng cao năng lực lãnh đạo, cầm quyền, sức chiến đấu của Đảng</li>
+          <li>Nêu gương</li>
+          <li>Công tác cán bộ</li>
+          <li>Phòng, chống tham nhũng, lãng phí, tiêu cực</li>
+          <li>Vai trò MTTQ và các tổ chức chính trị - xã hội</li>
+          <li>Văn hóa chính trị trong Đảng</li>
+        </ul>
+      </div>
+      <div class="keyword-group">
+        <h4>Cụm 4 (Câu 91–108) – Khoa học công nghệ, đổi mới sáng tạo, hạ tầng số và chính sách xã hội mới</h4>
+        <ul>
+          <li>Chỉ số đổi mới sáng tạo GII</li>
+          <li>Kinh tế tư nhân phát triển mạnh</li>
+          <li>Hạ tầng chiến lược, biểu tượng phát triển</li>
+          <li>Hạ tầng số quốc gia</li>
+          <li>AI, bán dẫn, công nghệ sinh học, năng lượng mới</li>
+          <li>An ninh mạng gắn với chuyển đổi số</li>
+          <li>Công nghiệp văn hóa</li>
+          <li>Giáo dục gắn thị trường lao động và kinh tế số</li>
+          <li>An sinh xã hội đa tầng, bao phủ toàn dân</li>
+          <li>Net Zero 2050</li>
+          <li>Đô thị thông minh, bền vững</li>
+          <li>Y tế dự phòng, y tế cơ sở, công nghệ cao</li>
+          <li>Kinh tế biển</li>
+          <li>“Kinh tế bạc” thích ứng già hóa dân số</li>
+        </ul>
+      </div>
+      <div class="keyword-group">
+        <h4>Cụm 5 (Câu 109–150) – Quốc phòng, an ninh, đối ngoại, CAND và bảo vệ ANTT từ cơ sở</h4>
+        <ul>
+          <li>Bảo vệ Tổ quốc</li>
+          <li>Bảo vệ Tổ quốc từ sớm, từ xa</li>
+          <li>Xây dựng QĐND, CAND cách mạng, chính quy, tinh nhuệ, hiện đại</li>
+          <li>Kết hợp phát triển kinh tế - xã hội với quốc phòng - an ninh</li>
+          <li>An ninh truyền thống và phi truyền thống</li>
+          <li>Chủ quyền quốc gia, chủ quyền số, chủ quyền trên không gian mạng</li>
+          <li>Ba trụ cột: đối ngoại Đảng - ngoại giao Nhà nước - đối ngoại Nhân dân</li>
+          <li>Lợi ích quốc gia - dân tộc là cao nhất</li>
+          <li>Chủ động, tích cực tại các cơ chế đa phương</li>
+          <li>Ngoại giao toàn diện phục vụ phát triển</li>
+          <li>Phát huy sức mạnh mềm Việt Nam</li>
+          <li>An ninh toàn diện</li>
+          <li>Tự chủ chiến lược về an ninh</li>
+          <li>An ninh con người</li>
+          <li>An ninh chủ động</li>
+          <li>Thế trận lòng dân</li>
+          <li>Chủ động nắm tình hình, xử lý từ sớm, từ cơ sở</li>
+          <li>Đảng lãnh đạo tuyệt đối, trực tiếp về mọi mặt đối với CAND</li>
+          <li>Giữ vững truyền thống CAND</li>
+          <li>Phát triển công nghiệp an ninh</li>
+          <li>Tổ chức bộ máy: “Bộ tinh, tỉnh toàn diện, xã vững mạnh, bám cơ sở”</li>
+          <li>Lực lượng tham gia bảo vệ ANTT ở cơ sở</li>
+          <li>Hội Cựu CAND</li>
+          <li>Bảo vệ ANTT từ sớm, từ xa, từ cơ sở</li>
+        </ul>
+      </div>
+    `;
+
+    let questionBank = [];
+    let selectedClusters = new Set();
+    let selectedTime = null;
+    let currentQuiz = null;
+    let timerId = null;
+    let nextTimeoutId = null;
+    let remainingSeconds = 0;
+
+    const excelFileEl = document.getElementById('excelFile');
+    const btnLoadExcel = document.getElementById('btnLoadExcel');
+    const driveLinkEl = document.getElementById('driveLink');
+    const btnSaveLink = document.getElementById('btnSaveLink');
+    const dataStatus = document.getElementById('dataStatus');
+    const btnNoiDung = document.getElementById('btnNoiDung');
+    const btnTuKhoa = document.getElementById('btnTuKhoa');
+    const btnTaiLieu = document.getElementById('btnTaiLieu');
+    const btnThiThuTop = document.getElementById('btnThiThuTop');
+    const noiDungActions = document.getElementById('noiDungActions');
+    const selectionSummary = document.getElementById('selectionSummary');
+    const timeOptions = [...document.querySelectorAll('.time-chip')];
+    const clusterButtons = [...document.querySelectorAll('.cluster-btn')];
+    const btnStartPractice = document.getElementById('btnStartPractice');
+    const quizSection = document.getElementById('quizSection');
+    const practiceSection = document.getElementById('practiceSection');
+    const resultSection = document.getElementById('resultSection');
+    const quizModeBadge = document.getElementById('quizModeBadge');
+    const quizCounter = document.getElementById('quizCounter');
+    const timerBadge = document.getElementById('timerBadge');
+    const progressFill = document.getElementById('progressFill');
+    const questionMeta = document.getElementById('questionMeta');
+    const questionText = document.getElementById('questionText');
+    const answersEl = document.getElementById('answers');
+    const btnStopQuiz = document.getElementById('btnStopQuiz');
+    const btnBackHome = document.getElementById('btnBackHome');
+    const resultScore = document.getElementById('resultScore');
+    const statCorrect = document.getElementById('statCorrect');
+    const statWrong = document.getElementById('statWrong');
+    const statTimeout = document.getElementById('statTimeout');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultDetail = document.getElementById('resultDetail');
+    const btnRedo = document.getElementById('btnRedo');
+    const btnHomeFromResult = document.getElementById('btnHomeFromResult');
+    const overlay = document.getElementById('overlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+
+    driveLinkEl.value = localStorage.getItem('dhxiv_drive_link') || '';
+
+    function showModal(title, html) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = html;
+      overlay.style.display = 'flex';
     }
 
     function closeModal() {
-        document.getElementById('content-modal').classList.add('hidden');
+      overlay.style.display = 'none';
     }
 
-    function toggleCluster(num, btn) {
-        if (selectedClusters.includes(num)) {
-            selectedClusters = selectedClusters.filter(i => i !== num);
-            btn.classList.remove('active');
-        } else {
-            selectedClusters.push(num);
-            btn.classList.add('active');
-        }
-        updateSelectionInfo();
+    function showToastMessage(title, text, actionLabel = 'Đồng ý', onAction = null) {
+      const id = 'confirmBox';
+      showModal(title, `
+        <div style="line-height:1.65; font-size:16px; color:#1f2937;">${text}</div>
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="${id}" class="btn btn-primary" style="max-width:220px;">${actionLabel}</button>
+        </div>
+      `);
+      document.getElementById(id).onclick = () => {
+        closeModal();
+        if (typeof onAction === 'function') onAction();
+      };
     }
 
-    function updateSelectionInfo() {
-        const info = document.getElementById('selection-info');
-        if (selectedClusters.length === 0) {
-            info.innerText = "Vui lòng chọn cụm nội dung ôn tập.";
-            return;
-        }
-        
-        let totalQ = rawData.filter(item => selectedClusters.includes(item.cluster)).length;
-        if (selectedClusters.length === 5) {
-            info.innerText = `Đồng chí chọn ôn tập tất cả ${totalQ} câu trắc nghiệm.`;
-        } else {
-            info.innerText = `Đồng chí đã chọn ôn tập ${totalQ} câu trắc nghiệm của ${String(selectedClusters.length).padStart(2, '0')} cụm nội dung.`;
-        }
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
 
-    function startTraining() {
-        const timerVal = document.querySelector('input[name="timer"]:checked');
-        if (selectedClusters.length === 0) { alert("Vui lòng chọn cụm nội dung!"); return; }
-        if (!timerVal) { alert("Vui lòng chọn thời gian trắc nghiệm trước khi ôn tập!"); return; }
-
-        timePerQuestion = parseInt(timerVal.value);
-        let msg = timePerQuestion === 0 ? "Không giới hạn thời gian trắc nghiệm mỗi câu." : `Đồng chí có thời gian ${timePerQuestion} giây cho mỗi câu trắc nghiệm.`;
-        
-        if (confirm(msg)) {
-            isMockTest = false;
-            currentQuestions = rawData.filter(item => selectedClusters.includes(item.cluster));
-            shuffleArray(currentQuestions);
-            initQuiz();
-        }
+    function getClusterByTT(tt) {
+      const n = Number(tt);
+      if (n >= 1 && n <= 20) return 1;
+      if (n >= 21 && n <= 60) return 2;
+      if (n >= 61 && n <= 90) return 3;
+      if (n >= 91 && n <= 108) return 4;
+      if (n >= 109 && n <= 150) return 5;
+      return null;
     }
 
-    function startMockTest() {
-        isMockTest = true;
-        timePerQuestion = 7;
-        currentQuestions = [];
-        // Lấy ngẫu nhiên 5 câu mỗi cụm
-        for (let i = 1; i <= 5; i++) {
-            let clusterQ = rawData.filter(item => item.cluster === i);
-            shuffleArray(clusterQ);
-            currentQuestions.push(...clusterQ.slice(0, 5));
-        }
-        shuffleArray(currentQuestions);
-        initQuiz();
+    function normalizeQuestion(row) {
+      const tt = Number(row['TT'] ?? row['tt'] ?? row['Stt'] ?? row['STT']);
+      const question = String(row['Câu hỏi'] ?? row['Cau hoi'] ?? row['Câu Hỏi'] ?? '').trim();
+      const ans1 = String(row['Đáp án 1'] ?? row['Dap an 1'] ?? '').trim();
+      const ans2 = String(row['Đáp án 2'] ?? row['Dap an 2'] ?? '').trim();
+      const ans3 = String(row['Đáp án 3'] ?? row['Dap an 3'] ?? '').trim();
+      const ans4 = String(row['Đáp án 4'] ?? row['Dap an 4'] ?? '').trim();
+      if (!tt || !question || !ans1 || !ans2 || !ans3 || !ans4) return null;
+      const cluster = getClusterByTT(tt);
+      if (!cluster) return null;
+      return {
+        tt,
+        cluster,
+        question,
+        answers: [
+          { text: ans1, isCorrect: true },
+          { text: ans2, isCorrect: false },
+          { text: ans3, isCorrect: false },
+          { text: ans4, isCorrect: false }
+        ]
+      };
     }
 
-    function initQuiz() {
-        document.getElementById('main-screen').classList.add('hidden');
-        document.getElementById('quiz-screen').classList.remove('hidden');
-        currentIdx = 0; score = 0; timeoutCount = 0;
-        showQuestion();
+    function updateDataStatus(ok = false, msg = '') {
+      dataStatus.innerHTML = msg;
+      dataStatus.style.borderLeftColor = ok ? '#16a34a' : '#3b82f6';
     }
 
-    function showQuestion() {
-        if (currentIdx >= currentQuestions.length) {
-            showResult();
-            return;
+    function loadExcel() {
+      const file = excelFileEl.files?.[0];
+      if (!file) {
+        showToastMessage('Thông báo', 'Đồng chí hãy chọn file Excel trước khi nạp dữ liệu.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          const sheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+          const parsed = json.map(normalizeQuestion).filter(Boolean).sort((a, b) => a.tt - b.tt);
+          if (parsed.length !== 150) {
+            updateDataStatus(false, `Đã đọc được <strong>${parsed.length}</strong> câu hợp lệ. Ứng dụng vẫn có thể chạy, nhưng để đúng yêu cầu, file nên có đủ 150 câu.`);
+          } else {
+            updateDataStatus(true, `Đã nạp thành công <strong>150/150</strong> câu hỏi. Ứng dụng sẵn sàng để ôn tập và thi thử.`);
+          }
+          questionBank = parsed;
+        } catch (err) {
+          console.error(err);
+          updateDataStatus(false, 'Không thể đọc file Excel. Hãy kiểm tra lại định dạng cột TT, Câu hỏi, Đáp án 1–4.');
+          showToastMessage('Lỗi dữ liệu', 'Không thể đọc file Excel. Đồng chí kiểm tra lại cấu trúc file nguồn rồi thử lại.');
         }
-
-        const qData = currentQuestions[currentIdx];
-        document.getElementById('question-number').innerText = `Câu ${currentIdx + 1}/${currentQuestions.length}`;
-        document.getElementById('question-text').innerText = qData.q;
-        
-        const answers = [qData.a, ...qData.o];
-        shuffleArray(answers);
-
-        const list = document.getElementById('answer-list');
-        list.innerHTML = '';
-        answers.forEach(ans => {
-            const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.innerText = ans;
-            btn.onclick = () => checkAnswer(ans, qData.a, btn);
-            list.appendChild(btn);
-        });
-
-        if (timePerQuestion > 0) {
-            startTimer();
-        }
+      };
+      reader.readAsArrayBuffer(file);
     }
 
-    function startTimer() {
-        let timeLeft = timePerQuestion;
-        const bar = document.getElementById('timer-bar');
-        bar.style.width = '100%';
-        bar.style.transition = 'none';
-        setTimeout(() => {
-            bar.style.transition = `width ${timePerQuestion}s linear`;
-            bar.style.width = '0%';
-        }, 10);
+    function saveDriveLink() {
+      localStorage.setItem('dhxiv_drive_link', driveLinkEl.value.trim());
+      showToastMessage('Đã lưu', 'Đã lưu liên kết Google Drive tài liệu ôn tập.');
+    }
 
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                timeoutCount++;
-                nextQuestionAuto();
-            }
+    function updateSelectionSummary() {
+      const clusters = [...selectedClusters].sort((a,b)=>a-b);
+      if (!clusters.length) {
+        selectionSummary.textContent = 'Đồng chí chưa chọn cụm nội dung ôn tập.';
+        return;
+      }
+      const total = clusters.reduce((sum, c) => sum + clusterMap[c].count, 0);
+      if (clusters.length === 5) {
+        selectionSummary.textContent = 'Đồng chí chọn ôn tập tất cả 150 câu trắc nghiệm.';
+      } else if (clusters.length === 1) {
+        selectionSummary.textContent = `Đồng chí đã chọn ôn tập ${total} câu trắc nghiệm của 01 cụm nội dung.`;
+      } else {
+        selectionSummary.textContent = `Đồng chí đã chọn ôn tập ${total} câu trắc nghiệm của ${clusters.length} cụm nội dung.`;
+      }
+    }
+
+    function setTimeMode(value) {
+      selectedTime = Number(value);
+      timeOptions.forEach(label => {
+        const input = label.querySelector('input');
+        label.classList.toggle('active', Number(input.value) === selectedTime);
+        input.checked = Number(input.value) === selectedTime;
+      });
+    }
+
+    function getPracticeQuestions() {
+      const clusters = [...selectedClusters];
+      return questionBank.filter(q => clusters.includes(q.cluster));
+    }
+
+    function validateReady(checkClusters = true) {
+      if (!questionBank.length) {
+        showToastMessage('Thiếu dữ liệu', 'Đồng chí cần nạp file Excel câu hỏi trước khi sử dụng.');
+        return false;
+      }
+      if (checkClusters && !selectedClusters.size) {
+        showToastMessage('Chưa chọn cụm', 'Đồng chí cần chọn ít nhất 01 cụm nội dung để bắt đầu ôn tập.');
+        return false;
+      }
+      if (selectedTime === null && checkClusters) {
+        showToastMessage('Chưa chọn thời gian', 'Đồng chí cần chọn thời gian trắc nghiệm trước khi ôn tập.');
+        return false;
+      }
+      return true;
+    }
+
+    function buildQuiz(mode, questions, timePerQuestion) {
+      return {
+        mode,
+        questions,
+        timePerQuestion,
+        currentIndex: 0,
+        correct: 0,
+        wrong: 0,
+        timeoutWrong: 0,
+        answers: []
+      };
+    }
+
+    function openQuiz(quiz) {
+      currentQuiz = quiz;
+      resultSection.classList.add('hidden');
+      practiceSection.classList.add('hidden');
+      quizSection.classList.remove('hidden');
+      btnBackHome.classList.add('hidden');
+      renderCurrentQuestion();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function clearTimers() {
+      if (timerId) clearInterval(timerId);
+      if (nextTimeoutId) clearTimeout(nextTimeoutId);
+      timerId = null;
+      nextTimeoutId = null;
+    }
+
+    function renderCurrentQuestion() {
+      clearTimers();
+      const quiz = currentQuiz;
+      const q = quiz.questions[quiz.currentIndex];
+      if (!q) {
+        finishQuiz();
+        return;
+      }
+      quizModeBadge.textContent = quiz.mode === 'mock' ? 'Thi thử 25 câu' : 'Ôn tập';
+      quizCounter.textContent = `Câu ${quiz.currentIndex + 1}/${quiz.questions.length}`;
+      questionMeta.textContent = `${clusterMap[q.cluster].name} • Câu nguồn số ${q.tt}`;
+      questionText.textContent = q.question;
+      progressFill.style.width = `${((quiz.currentIndex) / quiz.questions.length) * 100}%`;
+
+      const shuffledAnswers = shuffle(q.answers).map((ans, idx) => ({ ...ans, displayLabel: ['A','B','C','D'][idx] }));
+      q.shuffledAnswers = shuffledAnswers;
+      answersEl.innerHTML = shuffledAnswers.map((ans, idx) => `
+        <button class="answer" data-index="${idx}">
+          <span class="answer-label">${ans.displayLabel}</span>
+          ${escapeHtml(ans.text)}
+        </button>
+      `).join('');
+
+      [...answersEl.querySelectorAll('.answer')].forEach(btn => {
+        btn.addEventListener('click', () => answerQuestion(Number(btn.dataset.index)));
+      });
+
+      if (quiz.timePerQuestion > 0) {
+        remainingSeconds = quiz.timePerQuestion;
+        timerBadge.textContent = `Còn ${remainingSeconds} giây`;
+        timerId = setInterval(() => {
+          remainingSeconds -= 1;
+          if (remainingSeconds > 0) {
+            timerBadge.textContent = `Còn ${remainingSeconds} giây`;
+          } else {
+            clearInterval(timerId);
+            timerId = null;
+            timerBadge.textContent = 'Hết thời gian';
+            handleTimeout();
+          }
         }, 1000);
+      } else {
+        timerBadge.textContent = 'Không giới hạn';
+      }
     }
 
-    function checkAnswer(selected, correct, btn) {
-        clearInterval(timerInterval);
-        const allBtns = document.querySelectorAll('.answer-btn');
-        allBtns.forEach(b => b.disabled = true);
+    function disableAnswers() {
+      [...answersEl.querySelectorAll('.answer')].forEach(el => el.classList.add('disabled'));
+    }
 
-        let delay = isMockTest ? 2000 : (selected === correct ? 2000 : 3000);
+    function answerQuestion(index) {
+      const quiz = currentQuiz;
+      const q = quiz.questions[quiz.currentIndex];
+      if (!q || q.answered) return;
+      q.answered = true;
+      clearTimers();
+      disableAnswers();
 
-        if (selected === correct) {
-            btn.classList.add('correct');
-            score++;
+      const selected = q.shuffledAnswers[index];
+      const answerButtons = [...answersEl.querySelectorAll('.answer')];
+      const correctIndex = q.shuffledAnswers.findIndex(a => a.isCorrect);
+      answerButtons[correctIndex].classList.add('correct');
+
+      if (selected.isCorrect) {
+        quiz.correct += 1;
+        quiz.answers.push({ tt: q.tt, result: 'correct', timeout: false });
+        timerBadge.textContent = 'Chính xác';
+        nextTimeoutId = setTimeout(nextQuestion, quiz.mode === 'mock' ? 2000 : 2000);
+      } else {
+        quiz.wrong += 1;
+        answerButtons[index].classList.add('wrong');
+        quiz.answers.push({ tt: q.tt, result: 'wrong', timeout: false });
+        timerBadge.textContent = 'Sai đáp án';
+        nextTimeoutId = setTimeout(nextQuestion, quiz.mode === 'mock' ? 2000 : 3000);
+      }
+    }
+
+    function handleTimeout() {
+      const quiz = currentQuiz;
+      const q = quiz.questions[quiz.currentIndex];
+      if (!q || q.answered) return;
+      q.answered = true;
+      quiz.wrong += 1;
+      quiz.timeoutWrong += 1;
+      quiz.answers.push({ tt: q.tt, result: 'timeout', timeout: true });
+      disableAnswers();
+      const answerButtons = [...answersEl.querySelectorAll('.answer')];
+      const correctIndex = q.shuffledAnswers.findIndex(a => a.isCorrect);
+      if (answerButtons[correctIndex]) answerButtons[correctIndex].classList.add('correct');
+      nextTimeoutId = setTimeout(nextQuestion, quiz.mode === 'mock' ? 2000 : 2000);
+    }
+
+    function nextQuestion() {
+      clearTimers();
+      if (!currentQuiz) return;
+      currentQuiz.currentIndex += 1;
+      renderCurrentQuestion();
+    }
+
+    function finishQuiz() {
+      clearTimers();
+      if (!currentQuiz) return;
+      const quiz = currentQuiz;
+      const total = quiz.questions.length;
+      const correct = quiz.correct;
+      const wrong = quiz.wrong;
+      const timeoutWrong = quiz.timeoutWrong;
+      const percent = total ? Math.round((correct / total) * 100) : 0;
+
+      quizSection.classList.add('hidden');
+      resultSection.classList.remove('hidden');
+      resultScore.textContent = `${correct}/${total} (${percent}%)`;
+      statCorrect.textContent = correct;
+      statWrong.textContent = wrong;
+      statTimeout.textContent = timeoutWrong;
+
+      let message = '';
+      let cls = 'message-ok';
+      if (quiz.mode === 'mock') {
+        if (correct === 25) {
+          message = 'Xin chúc mừng! Đồng chí đã hoàn thành xuất sắc phần thi thử, đúng tất cả 25 câu!';
+          cls = 'message-ok';
+        } else if (correct >= 23) {
+          message = `Đồng chí đã hoàn thành rất tốt phần thi thử, đã đúng ${correct}/25 câu (${percent}%).`;
+          cls = 'message-ok';
+        } else if (correct >= 20) {
+          message = `Đồng chí đã hoàn thành tốt phần thi thử, đã đúng ${correct}/25 câu (${percent}%).`;
+          cls = 'message-ok';
+        } else if (correct >= 16) {
+          message = `Đồng chí đạt yêu cầu, đã đúng ${correct}/25 câu (${percent}%), nhưng vẫn cần ôn tập kỹ hơn.`;
+          cls = 'message-warn';
         } else {
-            btn.classList.add('wrong');
-            allBtns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
+          message = `Đồng chí cần tập trung ôn luyện thật nghiêm túc, chỉ đúng ${correct}/25 câu (${percent}%).`;
+          cls = 'message-warn';
         }
-
-        setTimeout(() => {
-            currentIdx++;
-            showQuestion();
-        }, delay);
-    }
-
-    function nextQuestionAuto() {
-        const allBtns = document.querySelectorAll('.answer-btn');
-        allBtns.forEach(b => b.disabled = true);
-        // Hiện đáp án đúng khi hết thời gian
-        const correct = currentQuestions[currentIdx].a;
-        allBtns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
-        
-        setTimeout(() => {
-            currentIdx++;
-            showQuestion();
-        }, 2000);
-    }
-
-    function showResult() {
-        document.getElementById('quiz-screen').classList.add('hidden');
-        document.getElementById('result-screen').classList.remove('hidden');
-        
-        let total = currentQuestions.length;
-        let percent = Math.round((score / total) * 100);
-        let detail = `Đúng: ${score}/${total} (${percent}%) <br> Sai: ${total - score} (Trong đó ${timeoutCount} câu quá thời gian)`;
-        document.getElementById('result-detail').innerHTML = detail;
-
-        let msg = "";
-        if (isMockTest) {
-            if (score === 25) msg = "Xin chúc mừng! Đồng chí đã hoàn thành xuất sắc phần thi thử, đúng tất cả 25 câu!";
-            else if (score >= 23) msg = `Đồng chí đã hoàn thành rất tốt phần thi thử, đã đúng ${score}/25 câu (${percent}%)`;
-            else if (score >= 20) msg = `Đồng chí đã hoàn thành tốt phần thi thử, đã đúng ${score}/25 câu (${percent}%)`;
-            else if (score >= 16) msg = `Đồng chí đạt yêu cầu, đã đúng ${score}/25 câu (${percent}%), nhưng vẫn cần ôn tập kỹ hơn`;
-            else msg = `Đồng chí cần tập trung ôn luyện thật nghiêm túc, chỉ đúng ${score}/25 câu (${percent}%)`;
+      } else {
+        if (percent > 70) {
+          message = 'Đồng chí đã ôn tập khá tốt, cần tiếp tục duy trì.';
+          cls = 'message-ok';
         } else {
-            msg = percent >= 70 ? "Đồng chí đã ôn tập khá tốt, cần tiếp tục duy trì" : "Đồng chí cần tiếp tục tập trung ôn luyện thật nghiêm túc";
+          message = 'Đồng chí cần tiếp tục tập trung ôn luyện thật nghiêm túc.';
+          cls = 'message-warn';
         }
-        document.getElementById('result-message').innerText = msg;
+      }
+
+      resultMessage.className = `message-box ${cls}`;
+      resultMessage.textContent = message;
+
+      const modeText = quiz.mode === 'mock' ? 'thi thử 25 câu' : 'ôn tập theo cụm';
+      const timeText = quiz.timePerQuestion > 0 ? `${quiz.timePerQuestion} giây/câu` : 'không giới hạn thời gian';
+      resultDetail.innerHTML = `
+        Đồng chí vừa hoàn thành phần <strong>${modeText}</strong>.<br>
+        Kết quả: <strong>${correct}</strong> câu đúng, <strong>${wrong}</strong> câu sai, trong đó có <strong>${timeoutWrong}</strong> câu không bảo đảm thời gian và được tính sai.<br>
+        Chế độ thời gian: <strong>${timeText}</strong>.
+      `;
+      progressFill.style.width = '100%';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
+    function resetToHome() {
+      clearTimers();
+      currentQuiz = null;
+      quizSection.classList.add('hidden');
+      resultSection.classList.add('hidden');
+      practiceSection.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-</script>
 
+    function startPractice() {
+      if (!validateReady(true)) return;
+      const questions = getPracticeQuestions().sort((a,b)=>a.tt-b.tt);
+      const timeText = selectedTime > 0 ? `${String(selectedTime).padStart(2, '0')} giây` : 'Không giới hạn thời gian trắc nghiệm mỗi câu';
+      const intro = selectedTime > 0
+        ? `Đồng chí có thời gian <strong>${selectedTime}</strong> giây cho mỗi câu trắc nghiệm.`
+        : 'Không giới hạn thời gian trắc nghiệm mỗi câu.';
+      showToastMessage('Bắt đầu ôn tập', `${intro}<br><br>Tổng số câu sẽ ôn tập: <strong>${questions.length}</strong>.`, 'Đồng ý', () => {
+        openQuiz(buildQuiz('practice', questions, selectedTime));
+      });
+    }
+
+    function startMockExam() {
+      if (!validateReady(false)) return;
+      const groups = [1,2,3,4,5].map(c => questionBank.filter(q => q.cluster === c));
+      const enough = groups.every(g => g.length >= 5);
+      if (!enough) {
+        showToastMessage('Thiếu dữ liệu', 'Mỗi cụm cần có ít nhất 05 câu để tổ chức thi thử đúng cấu trúc 25 câu.');
+        return;
+      }
+      const picked = groups.flatMap(g => shuffle(g).slice(0, 5));
+      const quizQuestions = shuffle(picked);
+      showToastMessage('Bắt đầu thi thử', 'Phần mềm sẽ chọn ngẫu nhiên 25 câu, mỗi cụm 05 câu. Thời gian làm bài được quy định là <strong>07 giây/câu</strong>.', 'Đồng ý', () => {
+        openQuiz(buildQuiz('mock', quizQuestions, 7));
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    btnLoadExcel.addEventListener('click', loadExcel);
+    btnSaveLink.addEventListener('click', saveDriveLink);
+    btnNoiDung.addEventListener('click', () => noiDungActions.classList.toggle('hidden'));
+    btnTuKhoa.addEventListener('click', () => showModal('Từ khóa Ôn tập nhanh', keywordsHtml));
+    btnTaiLieu.addEventListener('click', () => {
+      const link = (driveLinkEl.value || localStorage.getItem('dhxiv_drive_link') || '').trim();
+      if (!link) {
+        showToastMessage('Chưa có liên kết', 'Đồng chí chưa thiết lập đường link Google Drive tài liệu ôn tập.');
+        return;
+      }
+      window.open(link, '_blank');
+    });
+    btnThiThuTop.addEventListener('click', startMockExam);
+    btnStartPractice.addEventListener('click', startPractice);
+    btnStopQuiz.addEventListener('click', finishQuiz);
+    btnBackHome.addEventListener('click', resetToHome);
+    btnRedo.addEventListener('click', resetToHome);
+    btnHomeFromResult.addEventListener('click', resetToHome);
+    btnCloseModal.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+    clusterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cluster = Number(btn.dataset.cluster);
+        if (selectedClusters.has(cluster)) selectedClusters.delete(cluster);
+        else selectedClusters.add(cluster);
+        btn.classList.toggle('active', selectedClusters.has(cluster));
+        updateSelectionSummary();
+      });
+    });
+
+    timeOptions.forEach(label => {
+      const input = label.querySelector('input');
+      label.addEventListener('click', () => setTimeMode(input.value));
+    });
+
+    updateSelectionSummary();
+
+    // Dữ liệu mẫu tối thiểu để có thể xem giao diện ngay cả khi chưa nạp Excel.
+    // Khi nạp Excel, dữ liệu mẫu sẽ được thay thế hoàn toàn.
+    questionBank = [
+      { tt: 1, cluster: 1, question: 'Ví dụ giao diện: Đây là câu mẫu. Khi dùng thực tế, hãy nạp file Excel của đồng chí.', answers:[{text:'Đáp án đúng mẫu', isCorrect:true},{text:'Đáp án nhiễu 1', isCorrect:false},{text:'Đáp án nhiễu 2', isCorrect:false},{text:'Đáp án nhiễu 3', isCorrect:false}] },
+      { tt: 21, cluster: 2, question: 'Ví dụ giao diện cho Cụm 2.', answers:[{text:'Đáp án đúng mẫu', isCorrect:true},{text:'Đáp án nhiễu 1', isCorrect:false},{text:'Đáp án nhiễu 2', isCorrect:false},{text:'Đáp án nhiễu 3', isCorrect:false}] },
+      { tt: 61, cluster: 3, question: 'Ví dụ giao diện cho Cụm 3.', answers:[{text:'Đáp án đúng mẫu', isCorrect:true},{text:'Đáp án nhiễu 1', isCorrect:false},{text:'Đáp án nhiễu 2', isCorrect:false},{text:'Đáp án nhiễu 3', isCorrect:false}] },
+      { tt: 91, cluster: 4, question: 'Ví dụ giao diện cho Cụm 4.', answers:[{text:'Đáp án đúng mẫu', isCorrect:true},{text:'Đáp án nhiễu 1', isCorrect:false},{text:'Đáp án nhiễu 2', isCorrect:false},{text:'Đáp án nhiễu 3', isCorrect:false}] },
+      { tt: 109, cluster: 5, question: 'Ví dụ giao diện cho Cụm 5.', answers:[{text:'Đáp án đúng mẫu', isCorrect:true},{text:'Đáp án nhiễu 1', isCorrect:false},{text:'Đáp án nhiễu 2', isCorrect:false},{text:'Đáp án nhiễu 3', isCorrect:false}] }
+    ];
+    updateDataStatus(false, 'Ứng dụng đang có <strong>dữ liệu mẫu giao diện</strong>. Đồng chí hãy nạp file Excel thật để sử dụng đúng bộ 150 câu hỏi.');
+  </script>
 </body>
 </html>
