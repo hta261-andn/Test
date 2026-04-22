@@ -99,6 +99,15 @@
       padding: 14px 16px 0;
       background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.94));
     }
+    .top-actions .btn-admin {
+      background: linear-gradient(180deg, #8b1220, #6f0f19);
+      color: #fff;
+      border: 1px solid rgba(139,18,32,.22);
+      box-shadow: 0 10px 20px rgba(139,18,32,.18);
+    }
+    .top-actions .btn-admin:hover {
+      background: linear-gradient(180deg, #971424, #76111b);
+    }
     .hero-actions {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, auto));
@@ -175,7 +184,7 @@
     }
     .search-row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr;
       gap: 10px;
       align-items: center;
     }
@@ -293,6 +302,26 @@
     .picker-search:focus {
       border-color: rgba(139,18,32,.45);
       box-shadow: 0 0 0 4px rgba(139,18,32,.08);
+    }
+    .picker-search-wrap {
+      position: relative;
+    }
+    .picker-search-wrap .picker-search {
+      padding-right: 46px;
+    }
+    .picker-clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      place-items: center;
+      background: #f3f4f6;
+      color: #6b7280;
+      border: none;
+    }
+    .picker-clear-btn.active {
+      display: inline-grid;
     }
     .picker-section + .picker-section { margin-top: 12px; }
     .picker-label {
@@ -1053,9 +1082,8 @@
       .hero-actions .btn span:last-child { white-space: nowrap; }
       .main-panel { margin-top: 10px; border-radius: 22px; }
       .toolbar { padding: 10px 12px 12px; }
-      .search-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-      .search-wrap { grid-column: 1 / -1; }
-      .search-row .btn { min-height: 42px; padding: 0 10px; font-size: 12px; }
+      .search-row { grid-template-columns: 1fr; gap: 8px; }
+      .search-wrap { grid-column: auto; }
       .search-input { min-height: 50px; font-size: 15px; }
       .filters { margin-top: 4px; gap: 8px; }
       .filter-box { padding: 10px; border-radius: 16px; }
@@ -1148,14 +1176,6 @@
             <input id="searchInput" class="search-input" type="text" placeholder="Tìm theo họ tên, bộ phận, chức vụ hoặc số điện thoại..." autocomplete="off" />
             <button id="clearBtn" class="clear-btn" type="button" aria-label="Xóa tìm kiếm">×</button>
           </div>
-          <button class="btn btn-ghost" id="resetBtn" type="button">
-            <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span>Xóa lọc</span>
-          </button>
-          <button class="btn btn-ghost" id="copyVisibleBtn" type="button">
-            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-            <span>Chép số đang hiện</span>
-          </button>
         </div>
 
         <div class="filters">
@@ -1343,7 +1363,10 @@
           <div class="form-group">
             <label class="form-label">Chọn nhanh nhân sự cần cập nhật</label>
             <div class="picker-box">
-              <input class="picker-search" id="update-picker-search" type="text" placeholder="Tìm theo họ tên, bộ phận, chức vụ hoặc số điện thoại..." autocomplete="off" />
+              <div class="picker-search-wrap">
+                <input class="picker-search" id="update-picker-search" type="text" placeholder="Tìm theo họ tên, bộ phận, chức vụ hoặc số điện thoại..." autocomplete="off" />
+                <button class="clear-btn picker-clear-btn" id="update-picker-clear" type="button" aria-label="Xóa tìm kiếm cập nhật">×</button>
+              </div>
               <div class="picker-section">
                 <div class="picker-label">Bộ phận</div>
                 <div class="chips" id="updateDeptChips"></div>
@@ -1411,7 +1434,10 @@
           <div class="form-group">
             <label class="form-label">Chọn nhanh nhân sự cần xóa</label>
             <div class="picker-box">
-              <input class="picker-search" id="delete-picker-search" type="text" placeholder="Tìm theo họ tên, bộ phận, chức vụ hoặc số điện thoại..." autocomplete="off" />
+              <div class="picker-search-wrap">
+                <input class="picker-search" id="delete-picker-search" type="text" placeholder="Tìm theo họ tên, bộ phận, chức vụ hoặc số điện thoại..." autocomplete="off" />
+                <button class="clear-btn picker-clear-btn" id="delete-picker-clear" type="button" aria-label="Xóa tìm kiếm xóa nhân sự">×</button>
+              </div>
               <div class="picker-section">
                 <div class="picker-label">Bộ phận</div>
                 <div class="chips" id="deleteDeptChips"></div>
@@ -1455,7 +1481,7 @@
 
   <script>
     const APP = {
-      version: "6.3-ui-actions-scrollfix",
+      version: "6.4-ui-buttonfix-pickerclear",
       sheetId: "12ScVQf6SvfDt5kSKvLkX5BvFxx3IptISKaWsl3qi65w",
       gid: "0",
       scriptUrl: "https://script.google.com/macros/s/AKfycbw3ieo6Iq_RrBHL7lKJBKWIHEpey9cd9eJrqSOAD1Lf3PCpE-ALhzBI_PMrgPCa30IaJw/exec",
@@ -1554,8 +1580,6 @@
     const els = {
       searchInput: document.getElementById('searchInput'),
       clearBtn: document.getElementById('clearBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      copyVisibleBtn: document.getElementById('copyVisibleBtn'),
       refreshBtn: document.getElementById('refreshBtn'),
       retryBtn: document.getElementById('retryBtn'),
       adminBtn: document.getElementById('adminBtn'),
@@ -1886,6 +1910,13 @@
     function runTransition(fn) {
       if (document.startViewTransition) document.startViewTransition(fn);
       else fn();
+    }
+
+    function updatePickerClearButton(mode) {
+      const searchEl = document.getElementById(`${mode}-picker-search`);
+      const clearEl = document.getElementById(`${mode}-picker-clear`);
+      if (!searchEl || !clearEl) return;
+      clearEl.classList.toggle('active', !!searchEl.value.trim());
     }
 
     async function copyText(text, button) {
@@ -2646,6 +2677,7 @@
       document.getElementById('update-current-info').classList.add('hidden');
       document.getElementById('update-current-title').classList.add('hidden');
       clearPassError('update-confirm-pass', 'update-pass-error');
+      updatePickerClearButton('update');
       renderAdminPersonPicker('update');
     }
 
@@ -2656,6 +2688,7 @@
       adminPickerState.delete = { dept: 'Tất cả', role: ROLE_ALL, query: '', selectedId: '' };
       document.getElementById('delete-preview').classList.add('hidden');
       clearPassError('delete-confirm-pass', 'delete-pass-error');
+      updatePickerClearButton('delete');
       renderAdminPersonPicker('delete');
     }
 
@@ -2698,11 +2731,24 @@
 
       ['update', 'delete'].forEach(mode => {
         const searchEl = document.getElementById(`${mode}-picker-search`);
+        const clearEl = document.getElementById(`${mode}-picker-clear`);
         if (!searchEl) return;
         searchEl.addEventListener('input', () => {
           adminPickerState[mode].query = searchEl.value;
+          updatePickerClearButton(mode);
           renderAdminPersonPicker(mode);
         });
+        if (clearEl) {
+          clearEl.addEventListener('click', () => {
+            Sound.tap();
+            searchEl.value = '';
+            adminPickerState[mode].query = '';
+            updatePickerClearButton(mode);
+            renderAdminPersonPicker(mode);
+            searchEl.focus();
+          });
+        }
+        updatePickerClearButton(mode);
       });
 
       document.getElementById('add-dept').addEventListener('change', function() {
@@ -2830,15 +2876,6 @@
       });
       els.clearBtn.addEventListener('click', () => {
         Sound.tap(); state.query = ''; els.searchInput.value = ''; els.searchInput.focus(); render();
-      });
-      els.resetBtn.addEventListener('click', () => {
-        Sound.tap(); state.query = ''; state.activeDept = 'Tất cả'; state.activeRole = ROLE_ALL;
-        els.searchInput.value = ''; runTransition(render);
-      });
-      els.copyVisibleBtn.addEventListener('click', async () => {
-        const phones = [...new Set(state.filtered.flatMap(p => p.phoneDisplays).filter(Boolean))];
-        if (!phones.length) { showToast('Không có số điện thoại để sao chép.', 'error', '⚠️'); Sound.error(); return; }
-        Sound.copy(); vibrate(10); await copyText(phones.join(', '), els.copyVisibleBtn); showToast('Đã sao chép các số đang hiển thị.', 'success', '✅');
       });
       els.refreshBtn.addEventListener('click', () => { Sound.tap(); vibrate(10); syncData(); });
       if (els.retryBtn) els.retryBtn.addEventListener('click', () => { Sound.tap(); vibrate(10); syncData(); });
