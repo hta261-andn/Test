@@ -1,143 +1,35 @@
 <!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GD2 CORS Test — BC Số liệu ANTT Cơ sở</title>
-<style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#10243e;background:#f4f7fb}
-body{margin:0;padding:24px} .wrap{max-width:920px;margin:auto} .card{background:#fff;border:1px solid #dbe5f1;border-radius:16px;padding:18px;box-shadow:0 10px 28px rgba(15,63,168,.08)}
-h1{font-size:22px;margin:0 0 8px} p{line-height:1.5} button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer;background:#165dff;color:#fff;margin:4px 6px 4px 0}
-button.secondary{background:#eef5ff;color:#0f3fa8;border:1px solid #cfe0f7} pre{white-space:pre-wrap;word-break:break-word;background:#0d1117;color:#e6edf3;border-radius:12px;padding:14px;min-height:260px;overflow:auto}
-.ok{color:#087f5b;font-weight:700} .bad{color:#c92a2a;font-weight:700} .warn{color:#b26a00;font-weight:700}
-code{background:#eef5ff;padding:2px 5px;border-radius:5px} .status{margin:10px 0}
-</style>
-</head>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GD3 Auth Smoke Test</title>
+<style>body{font-family:system-ui,Arial;margin:20px;max-width:980px}input,select,button,textarea{font:inherit;padding:9px;margin:4px 0}input{width:min(460px,95%)}button{cursor:pointer}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid #ddd;border-radius:10px;padding:14px;margin:12px 0}.ok{color:#087a2f}.bad{color:#b00020}pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f8;padding:10px;border-radius:8px}@media(max-width:700px){.row{grid-template-columns:1fr}}</style></head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>Kiểm thử CORS GĐ2 — GitHub Pages → Apps Script</h1>
-    <p>Trang này chỉ kiểm thử API nền GĐ2. Không nhập mật khẩu/token. Phải mở trang từ <b>GitHub Pages (https://...github.io)</b>, không dùng <code>file://</code>.</p>
-    <div id="origin" class="status"></div>
-    <div>
-      <button onclick="runAll()">Chạy toàn bộ kiểm thử</button>
-      <button class="secondary" onclick="runGetHealth()">GET healthCheck</button>
-      <button class="secondary" onclick="runPostConfig()">POST getAppConfigPublic</button>
-      <button class="secondary" onclick="runPostPeriods()">POST getPeriodOptions</button>
-      <button class="secondary" onclick="runPostTimeFrame()">POST getReportTimeFrame</button>
-      <button class="secondary" onclick="runInvalidJsonContract()">POST lỗi chuẩn</button>
-    </div>
-    <p id="summary" class="status"></p>
-    <pre id="out">Chưa chạy.</pre>
-  </div>
+<h1>GĐ3 Authentication Smoke Test</h1>
+<p>Origin: <b id="origin"></b></p>
+<div class="card"><label>Web App /exec</label><br><input id="url" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec"></div>
+<div class="row">
+<div class="card"><h3>Public / portal</h3><button onclick="health()">1. healthCheck</button><br>
+<input id="uq" value="AREA_001"><button onclick="suggest('unit')">2. suggestUnitUsers</button><br>
+<input id="aq" value="Admin"><button onclick="suggest('admin')">3. suggestAdminUsers</button><br>
+<button onclick="wrongPortal()">4. Admin → unit phải WRONG_PORTAL</button></div>
+<div class="card"><h3>Unit</h3><input id="unitLogin" placeholder="login_input unit, ví dụ AREA_001_01"><br><input id="unitPass" type="password" placeholder="Mật khẩu unit"><br><button onclick="login('unit')">5. loginUnit</button> <button onclick="profile('unit')">getMyProfile</button></div>
 </div>
+<div class="row">
+<div class="card"><h3>Admin/Superadmin</h3><input id="adminLogin" value="Admin" placeholder="Admin hoặc admin được cấp"><br><input id="adminPass" type="password" placeholder="Mật khẩu quản trị"><br><button onclick="login('admin')">6. loginAdmin</button> <button onclick="profile('admin')">getMyProfile</button></div>
+<div class="card"><h3>Confirm token</h3><select id="who"><option value="admin">admin token</option><option value="unit">unit token</option></select><br><input id="confirmPass" type="password" placeholder="Nhập lại mật khẩu"><br><input id="scope" value="TEST_SCOPE"><br><button onclick="verifySensitive()">7. verifyPasswordForSensitiveAction</button> <button onclick="consume()">8. consumeConfirmToken</button></div>
+</div>
+<div class="card"><h3>Kết quả</h3><pre id="out">Chưa chạy.</pre></div>
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec";
-const out = document.getElementById('out');
-const summary = document.getElementById('summary');
-const originBox = document.getElementById('origin');
-const results = [];
-
-originBox.innerHTML = location.protocol === 'https:' && /github\.io$/i.test(location.hostname)
-  ? '<span class="ok">✓ Origin GitHub Pages hợp lệ: ' + esc(location.origin) + '</span>'
-  : '<span class="warn">⚠ Hiện tại origin là ' + esc(location.origin || location.protocol) + '. Để nghiệm thu CORS, hãy chạy trang này trên GitHub Pages.</span>';
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function requestId(label) {
-  const id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(16).slice(2));
-  return 'REQ_GD2_CORS_' + label + '_' + id;
-}
-function log(title, obj) {
-  out.textContent += '\n\n=== ' + title + ' ===\n' + JSON.stringify(obj, null, 2);
-}
-async function readJsonResponse(res) {
-  const text = await res.text();
-  let json;
-  try { json = JSON.parse(text); }
-  catch (e) { throw new Error('Response không phải JSON. HTTP ' + res.status + '. Nội dung: ' + text.slice(0,500)); }
-  return {status: res.status, ok: res.ok, json};
-}
-async function simplePost(action, payload) {
-  const body = {
-    action,
-    request_id: requestId(action),
-    payload: payload || {},
-    client_info: {
-      source: 'GD2_CORS_TEST',
-      portal: '',
-      device_hint: navigator.userAgentData && navigator.userAgentData.mobile ? 'mobile' : 'browser',
-      user_agent: navigator.userAgent
-    }
-  };
-  const res = await fetch(WEB_APP_URL, {
-    method: 'POST',
-    headers: {'Content-Type':'text/plain;charset=UTF-8'},
-    body: JSON.stringify(body),
-    redirect: 'follow',
-    cache: 'no-store'
-  });
-  return readJsonResponse(res);
-}
-async function execute(name, fn, validator) {
-  try {
-    const r = await fn();
-    const pass = validator(r);
-    results.push({name, pass, response:r});
-    log((pass ? 'PASS ' : 'FAIL ') + name, r);
-    return pass;
-  } catch (e) {
-    results.push({name, pass:false, error:String(e)});
-    log('ERROR ' + name, {error:String(e), stack:e && e.stack ? e.stack : ''});
-    return false;
-  }
-}
-async function runGetHealth() {
-  return execute('GET healthCheck', async () => {
-    const u = WEB_APP_URL + '?action=healthCheck&request_id=' + encodeURIComponent(requestId('health'));
-    return readJsonResponse(await fetch(u, {method:'GET', cache:'no-store', redirect:'follow'}));
-  }, r => r.json && r.json.ok === true && r.json.data && r.json.data.sheetConnected === true && r.json.data.schemaOk === true);
-}
-async function runPostConfig() {
-  return execute('POST getAppConfigPublic', () => simplePost('getAppConfigPublic', {}),
-    r => r.json && r.json.ok === true && r.json.data && r.json.data.appName && !('DEFAULT_PASSWORD' in r.json.data));
-}
-async function runPostPeriods() {
-  return execute('POST getPeriodOptions BM1/MONTH/2026', () => simplePost('getPeriodOptions', {form_code:'BM1',period_type:'MONTH',year:'2026'}),
-    r => r.json && r.json.ok === true && r.json.data && Array.isArray(r.json.data.periods) && r.json.data.periods.length === 12);
-}
-async function runPostTimeFrame() {
-  return execute('POST getReportTimeFrame BM1/2026-09', () => simplePost('getReportTimeFrame', {form_code:'BM1',period_type:'MONTH',period_key:'2026-09'}),
-    r => r.json && r.json.ok === true && r.json.data && r.json.data.period_key === '2026-09' && !!r.json.data.range_text);
-}
-async function runInvalidJsonContract() {
-  return execute('POST INVALID_REQUEST chuẩn JSON', async () => {
-    const res = await fetch(WEB_APP_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=UTF-8'},
-      body: JSON.stringify({request_id:requestId('invalid')}),
-      redirect:'follow',
-      cache:'no-store'
-    });
-    return readJsonResponse(res);
-  }, r => r.json && r.json.ok === false && r.json.errorCode === 'INVALID_REQUEST' && !!r.json.request_id);
-}
-async function runAll() {
-  results.length = 0;
-  out.textContent = 'Bắt đầu kiểm thử...';
-  summary.textContent = '';
-  await runGetHealth();
-  await runPostConfig();
-  await runPostPeriods();
-  await runPostTimeFrame();
-  await runInvalidJsonContract();
-  const passed = results.filter(x => x.pass).length;
-  const total = results.length;
-  summary.className = 'status ' + (passed === total ? 'ok' : 'bad');
-  summary.textContent = (passed === total ? 'PASS' : 'CHƯA ĐẠT') + ': ' + passed + '/' + total + ' kiểm thử.';
-  log('TỔNG KẾT', {passed,total,origin:location.origin,web_app_url:WEB_APP_URL});
-}
-</script>
-</body>
-</html>
+const state={unitToken:'',adminToken:'',confirmToken:'',confirmScope:''};
+document.getElementById('origin').textContent=location.origin;
+function rid(){return 'REQ_GD3_'+Date.now()+'_'+Math.random().toString(36).slice(2)}
+function safe(x){if(!x||typeof x!=='object')return x;let y=Array.isArray(x)?[]:{};for(const k in x){if(['token','confirm_token','password','password_hash','salt','token_hash','confirm_token_hash'].includes(k.toLowerCase()))y[k]='[HIDDEN]';else y[k]=safe(x[k])}return y}
+function show(label,obj){document.getElementById('out').textContent=label+'\n'+JSON.stringify(safe(obj),null,2)}
+async function api(action,{token='',portal='',payload={}}={}){const r=await fetch(document.getElementById('url').value,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,request_id:rid(),token,portal,payload,client_info:{source:'GD3_SMOKE',portal,user_agent:navigator.userAgent}})});return await r.json()}
+async function health(){show('healthCheck',await api('healthCheck'))}
+async function suggest(kind){const action=kind==='unit'?'suggestUnitUsers':'suggestAdminUsers';const q=document.getElementById(kind==='unit'?'uq':'aq').value;show(action,await api(action,{portal:kind==='unit'?'unit_portal':'admin_portal',payload:{query:q}}))}
+async function wrongPortal(){show('Admin → unit expected WRONG_PORTAL',await api('loginUnit',{portal:'unit_portal',payload:{login_input:'Admin',password:'not-used-for-wrong-portal'}}))}
+async function login(kind){const admin=kind==='admin', portal=admin?'admin_portal':'unit_portal', action=admin?'loginAdmin':'loginUnit';const login_input=document.getElementById(admin?'adminLogin':'unitLogin').value,password=document.getElementById(admin?'adminPass':'unitPass').value;const res=await api(action,{portal,payload:{login_input,password,portal}});if(res.ok&&res.data&&res.data.token)state[kind+'Token']=res.data.token;show(action,res)}
+async function profile(kind){const token=state[kind+'Token'];show(kind+' getMyProfile',await api('getMyProfile',{token,portal:kind==='admin'?'admin_portal':'unit_portal',payload:{}}))}
+async function verifySensitive(){const kind=document.getElementById('who').value, token=state[kind+'Token'], portal=kind==='admin'?'admin_portal':'unit_portal', password=document.getElementById('confirmPass').value, scope=document.getElementById('scope').value;const res=await api('verifyPasswordForSensitiveAction',{token,portal,payload:{password,scope}});if(res.ok&&res.data){state.confirmToken=res.data.confirm_token||'';state.confirmScope=res.data.confirm_scope||scope}show('verifyPasswordForSensitiveAction',res)}
+async function consume(){const kind=document.getElementById('who').value, token=state[kind+'Token'], portal=kind==='admin'?'admin_portal':'unit_portal';show('consumeConfirmToken',await api('consumeConfirmToken',{token,portal,payload:{confirm_token:state.confirmToken,scope:state.confirmScope}}))}
+</script></body></html>
