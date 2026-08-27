@@ -1,52 +1,113 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GD3 Auth Smoke Test</title>
-<style>body{font-family:system-ui,Arial;margin:20px;max-width:980px}input,select,button,textarea{font:inherit;padding:9px;margin:4px 0}input{width:min(460px,95%)}button{cursor:pointer}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid #ddd;border-radius:10px;padding:14px;margin:12px 0}.ok{color:#087a2f}.bad{color:#b00020}pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f8;padding:10px;border-radius:8px}@media(max-width:700px){.row{grid-template-columns:1fr}}</style></head>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GĐ4 Smoke Test — BC Số liệu ANTT Cơ sở</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:1100px;margin:20px auto;padding:0 12px;background:#f6f7f9;color:#1f2937}h1{font-size:23px}.card{background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:14px;margin:12px 0}input,select,button,textarea{font:inherit;padding:8px;margin:4px 2px}input[type=text],input[type=password]{min-width:300px;max-width:96%}button{cursor:pointer;border:1px solid #9ca3af;border-radius:7px;background:#fff}button:hover{background:#f0f2f5}.good{color:#087b37;font-weight:700}.bad{color:#b42318;font-weight:700}.warn{color:#9a6700;font-weight:700}pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;max-height:560px;overflow:auto}.small{font-size:13px;color:#4b5563}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}code{background:#eef2f7;padding:2px 4px;border-radius:4px}</style>
+</head>
 <body>
-<h1>GĐ3 Authentication Smoke Test</h1>
-<p>Origin: <b id="origin"></b></p>
-<div class="card"><label>Web App /exec</label><br><input id="url" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec"></div>
-<div class="row">
-<div class="card"><h3>Public / portal</h3><button onclick="health()">1. healthCheck</button><br>
-<input id="uq" value="AREA_001"><button onclick="suggest('unit')">2. suggestUnitUsers</button><br>
-<input id="aq" value="Admin"><button onclick="suggest('admin')">3. suggestAdminUsers</button><br>
-<button onclick="wrongPortal()">4. Admin → unit phải WRONG_PORTAL</button></div>
-<div class="card"><h3>Unit</h3><input id="unitLogin" placeholder="login_input unit, ví dụ AREA_001_01"><br><input id="unitPass" type="password" placeholder="Mật khẩu unit hiện tại"><br><button onclick="login('unit')">5. loginUnit</button><hr><strong>Đổi mật khẩu lần đầu</strong><br><input id="unitNewPass" type="password" placeholder="Mật khẩu mới (>=8 ký tự, hoa, thường, số, ký tự đặc biệt)"><br><button onclick="firstLoginChangePassword('unit')">5A. firstLoginChangePassword</button> <button onclick="profile('unit')">5B. getMyProfile</button></div>
+<h1>GĐ4 — Smoke Test nghiệp vụ báo cáo BM1–BM4</h1>
+<p class="small">Token chỉ giữ trong bộ nhớ trang. Không hiển thị mật khẩu/token thật. Mặc định thử trên BM2 tháng 09/2026 và BM4 quý III/2026 của tài khoản Unit đang đăng nhập.</p>
+<div class="card">
+  <b>Web App TEST</b><br>
+  <input id="url" type="text" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec">
+  <button onclick="health()">1. healthCheck</button>
 </div>
-<div class="row">
-<div class="card"><h3>Admin/Superadmin</h3>
-<input id="adminLogin" value="Admin" placeholder="Admin hoặc admin được cấp"><br>
-<input id="adminPass" type="password" placeholder="Mật khẩu quản trị hiện tại"><br>
-<button onclick="login('admin')">6. loginAdmin</button> <button onclick="profile('admin')">6B. getMyProfile</button>
-<hr><strong>Đổi mật khẩu lần đầu Admin/Superadmin</strong><br>
-<input id="adminNewPass" type="password" placeholder="Mật khẩu mới (>=8 ký tự, hoa, thường, số, ký tự đặc biệt)"><br>
-<button onclick="firstLoginChangePassword('admin')">6A. firstLoginChangePassword</button>
+<div class="card">
+  <b>Unit</b><br>
+  <input id="unitLogin" type="text" value="AREA_001_01" placeholder="login Unit">
+  <input id="unitPass" type="password" placeholder="Mật khẩu hiện tại của Unit">
+  <button onclick="loginUnit()">2. loginUnit</button>
+  <button onclick="currentPeriods()">3. getCurrentPeriods</button>
+  <span id="unitState" class="small">Chưa đăng nhập.</span>
 </div>
-<div class="card"><h3>Confirm token</h3><select id="who"><option value="admin">admin token</option><option value="unit">unit token</option></select><br><input id="confirmPass" type="password" placeholder="Nhập lại mật khẩu"><br><input id="scope" value="TEST_SCOPE"><br><button onclick="verifySensitive()">7. verifyPasswordForSensitiveAction</button> <button onclick="consume()">8. consumeConfirmToken</button></div>
+<div class="card">
+  <b>BM2 — tháng 09/2026</b>
+  <div class="row"><label>Period:</label><input id="bm2Period" value="2026-09" type="text"></div>
+  <div class="row">
+    <button onclick="formDef('BM2')">4. getFormDefinition</button>
+    <button onclick="periodOptions('BM2','MONTH')">5. getPeriodOptions</button>
+    <button onclick="timeFrame('BM2','MONTH')">6. getReportTimeFrame</button>
+    <button onclick="myReport('BM2','MONTH')">7. getMyReport</button>
+  </div>
+  <div class="row">
+    <button onclick="submitBM2()">8A. submit BM2 (c02..c16 = 0)</button>
+    <button onclick="retryBM2()">8B. retry cùng request_id</button>
+    <button onclick="updateBM2()">9. update BM2 (+1 c02)</button>
+    <button onclick="conflictBM2()">10. stale revision → CONFLICT</button>
+  </div>
+  <div class="row">
+    <button onclick="statusBM2()">11A. getSubmissionStatus</button>
+    <button onclick="historyBM2()">11B. getReportHistory</button>
+    <button onclick="comparisonBM2()">11C. getReportComparison</button>
+  </div>
+  <div id="bm2State" class="small">revision chưa biết.</div>
 </div>
-<div class="card"><h3>Kết quả</h3><pre id="out">Chưa chạy.</pre></div>
+<div class="card">
+  <b>BM4 — quý III/2026 (2 văn bản)</b>
+  <div class="row"><label>Period:</label><input id="bm4Period" value="2026-Q3" type="text"></div>
+  <div class="row">
+    <button onclick="formDef('BM4')">12A. getFormDefinition BM4</button>
+    <button onclick="myReport('BM4','QUARTER')">12B. getMyReport BM4</button>
+    <button onclick="submitBM4()">13. submit BM4 2 văn bản</button>
+    <button onclick="updateBM4()">14. update BM4 giữ document_id</button>
+  </div>
+  <div id="bm4State" class="small">revision chưa biết.</div>
+</div>
+<div class="card">
+  <b>Kiểm thử âm tính tùy chọn</b><br>
+  <input id="adminLogin" type="text" value="Admin"><input id="adminPass" type="password" placeholder="Mật khẩu Admin hiện tại">
+  <button onclick="loginAdmin()">N1. loginAdmin</button>
+  <button onclick="adminCallsUnitApi()">N2. Admin → getMyReport phải WRONG_PORTAL</button>
+  <button onclick="invalidNumber()">N3. BM2 số mơ hồ 1,000 phải VALIDATION_ERROR</button>
+</div>
+<div class="card">
+  <div><b>Kết quả:</b> <span id="status">Chưa chạy.</span></div>
+  <pre id="out">Chưa chạy.</pre>
+</div>
 <script>
-const state={unitToken:'',adminToken:'',confirmToken:'',confirmScope:''};
-document.getElementById('origin').textContent=location.origin;
-function rid(){return 'REQ_GD3_'+Date.now()+'_'+Math.random().toString(36).slice(2)}
-function safe(x){if(!x||typeof x!=='object')return x;let y=Array.isArray(x)?[]:{};for(const k in x){if(['token','confirm_token','password','password_hash','salt','token_hash','confirm_token_hash'].includes(k.toLowerCase()))y[k]='[HIDDEN]';else y[k]=safe(x[k])}return y}
-function show(label,obj){document.getElementById('out').textContent=label+'\n'+JSON.stringify(safe(obj),null,2)}
-async function api(action,{token='',portal='',payload={}}={}){const r=await fetch(document.getElementById('url').value,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,request_id:rid(),token,portal,payload,client_info:{source:'GD3_SMOKE',portal,user_agent:navigator.userAgent}})});return await r.json()}
-async function health(){show('healthCheck',await api('healthCheck'))}
-async function suggest(kind){const action=kind==='unit'?'suggestUnitUsers':'suggestAdminUsers';const q=document.getElementById(kind==='unit'?'uq':'aq').value;show(action,await api(action,{portal:kind==='unit'?'unit_portal':'admin_portal',payload:{query:q}}))}
-async function wrongPortal(){show('Admin → unit expected WRONG_PORTAL',await api('loginUnit',{portal:'unit_portal',payload:{login_input:'Admin',password:'not-used-for-wrong-portal'}}))}
-async function login(kind){const admin=kind==='admin', portal=admin?'admin_portal':'unit_portal', action=admin?'loginAdmin':'loginUnit';const login_input=document.getElementById(admin?'adminLogin':'unitLogin').value,password=document.getElementById(admin?'adminPass':'unitPass').value;const res=await api(action,{portal,payload:{login_input,password,portal}});if(res.ok&&res.data&&res.data.token)state[kind+'Token']=res.data.token;show(action,res)}
-async function firstLoginChangePassword(kind){
- const admin=kind==='admin';
- const token=state[kind+'Token'];
- const current_password=document.getElementById(admin?'adminPass':'unitPass').value;
- const new_password=document.getElementById(admin?'adminNewPass':'unitNewPass').value;
- const portal=admin?'admin_portal':'unit_portal';
- if(!token){show(kind+' firstLoginChangePassword',{ok:false,message:'Chưa có '+kind+' token. Hãy đăng nhập thành công trước.'});return}
- const res=await api('firstLoginChangePassword',{token,portal,payload:{current_password,new_password}});
- show(kind+' firstLoginChangePassword',res)
+const S={unitToken:'',adminToken:'',bm2Revision:0,bm2Values:null,bm2SubmitReq:'',bm2PreUpdateRevision:0,bm4Revision:0,bm4Docs:null};
+function rid(prefix='GD4'){return 'REQ_'+prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,11)}
+function url(){return document.getElementById('url').value.trim()}
+function safe(x){
+  const secret=/password|token|hash|salt|pepper/i;
+  function walk(v,k=''){if(secret.test(k))return '[HIDDEN]';if(Array.isArray(v))return v.map(a=>walk(a));if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(key=>o[key]=walk(v[key],key));return o}return v}
+  return walk(x)
 }
-async function profile(kind){const token=state[kind+'Token'];show(kind+' getMyProfile',await api('getMyProfile',{token,portal:kind==='admin'?'admin_portal':'unit_portal',payload:{}}))}
-async function verifySensitive(){const kind=document.getElementById('who').value, token=state[kind+'Token'], portal=kind==='admin'?'admin_portal':'unit_portal', password=document.getElementById('confirmPass').value, scope=document.getElementById('scope').value;const res=await api('verifyPasswordForSensitiveAction',{token,portal,payload:{password,scope}});if(res.ok&&res.data){state.confirmToken=res.data.confirm_token||'';state.confirmScope=res.data.confirm_scope||scope}show('verifyPasswordForSensitiveAction',res)}
-async function consume(){const kind=document.getElementById('who').value, token=state[kind+'Token'], portal=kind==='admin'?'admin_portal':'unit_portal';show('consumeConfirmToken',await api('consumeConfirmToken',{token,portal,payload:{confirm_token:state.confirmToken,scope:state.confirmScope}}))}
-</script></body></html>
+function show(label,res,expect){
+  let ok=expect?expect(res):!!res?.ok;
+  const st=document.getElementById('status');st.className=ok?'good':'bad';st.textContent=(ok?'PASS — ':'CHECK — ')+label;
+  document.getElementById('out').textContent=JSON.stringify(safe(res),null,2);
+}
+async function api(action,payload={},opt={}){
+  const req={action,request_id:opt.request_id||rid(action),token:opt.token||'',portal:opt.portal||'',payload,client_info:{source:'GD4_SMOKE_TEST_20260827',page_origin:location.origin}};
+  try{
+    const r=await fetch(url(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)});
+    const txt=await r.text();try{return JSON.parse(txt)}catch(e){return {ok:false,errorCode:'NON_JSON',message:txt.slice(0,1500)}}
+  }catch(e){return {ok:false,errorCode:'FETCH_ERROR',message:String(e)}}
+}
+async function health(){const r=await api('healthCheck');show('healthCheck',r,x=>x.ok&&x.data?.schemaOk===true)}
+async function loginUnit(){const r=await api('loginUnit',{login_input:document.getElementById('unitLogin').value,password:document.getElementById('unitPass').value},{portal:'unit_portal'});if(r.ok&&r.data?.token){S.unitToken=r.data.token;document.getElementById('unitState').textContent='Unit token đã lưu trong RAM; must_change_password='+String(r.data.must_change_password)}show('loginUnit',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
+async function loginAdmin(){const r=await api('loginAdmin',{login_input:document.getElementById('adminLogin').value,password:document.getElementById('adminPass').value},{portal:'admin_portal'});if(r.ok&&r.data?.token)S.adminToken=r.data.token;show('loginAdmin',r,x=>x.ok&&!!x.data?.token)}
+async function currentPeriods(){const r=await api('getCurrentPeriods',{}, {token:S.unitToken,portal:'unit_portal'});show('getCurrentPeriods',r,x=>x.ok&&Array.isArray(x.data?.periods));}
+function period(form){return document.getElementById(form==='BM4'?'bm4Period':'bm2Period').value.trim()}
+async function formDef(form){const r=await api('getFormDefinition',{form_code:form},{token:S.unitToken,portal:'unit_portal'});show('getFormDefinition '+form,r,x=>x.ok&&x.data?.field_count===(form==='BM2'?15:8))}
+async function periodOptions(form,ptype){const r=await api('getPeriodOptions',{form_code:form,period_type:ptype,year:'2026'},{token:S.unitToken,portal:'unit_portal'});show('getPeriodOptions '+form,r,x=>x.ok&&Array.isArray(x.data?.periods)&&x.data.periods.every(p=>p.is_submission_period===true))}
+async function timeFrame(form,ptype){const r=await api('getReportTimeFrame',{form_code:form,period_type:ptype,period_key:period(form)},{token:S.unitToken,portal:'unit_portal'});show('getReportTimeFrame '+form,r,x=>x.ok&&!!x.data?.range_text)}
+async function myReport(form,ptype){const r=await api('getMyReport',{form_code:form,period_type:ptype,period_key:period(form)},{token:S.unitToken,portal:'unit_portal'});if(r.ok){if(form==='BM2'){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=r.data.values||null;document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', status='+r.data.status+', can_edit='+r.data.can_edit}else{S.bm4Revision=Number(r.data.revision||0);S.bm4Docs=r.data.documents||[];document.getElementById('bm4State').textContent='revision='+S.bm4Revision+', status='+r.data.status+', docs='+(S.bm4Docs?.length||0)}}show('getMyReport '+form,r,x=>x.ok)}
+function zeroBM2(){const v={};for(let i=2;i<=16;i++)v['c'+String(i).padStart(2,'0')]=0;return v}
+async function submitBM2(){S.bm2SubmitReq=rid('BM2_SUBMIT');const r=await api('submitReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),values:zeroBM2()},{token:S.unitToken,portal:'unit_portal',request_id:S.bm2SubmitReq});if(r.ok){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=zeroBM2();document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', submit_status='+r.data.submit_status}show('submitReport BM2',r,x=>x.ok&&x.data?.revision===1)}
+async function retryBM2(){if(!S.bm2SubmitReq){show('retry BM2',{ok:false,message:'Chưa có request_id từ bước 8A.'});return}const r=await api('submitReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),values:zeroBM2()},{token:S.unitToken,portal:'unit_portal',request_id:S.bm2SubmitReq});show('retry same request_id',r,x=>x.ok===false&&x.errorCode==='DUPLICATE_REQUEST_HANDLED')}
+async function updateBM2(){if(!S.bm2Revision){await myReport('BM2','MONTH');if(!S.bm2Revision)return}const vals=Object.assign(zeroBM2(),S.bm2Values||{});vals.c02=Number(vals.c02||0)+1;S.bm2PreUpdateRevision=S.bm2Revision;const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2Revision,values:vals},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=vals;document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', previous_revision='+r.data.previous_revision}show('updateReport BM2',r,x=>x.ok&&x.data?.revision===S.bm2PreUpdateRevision+1)}
+async function conflictBM2(){if(!S.bm2PreUpdateRevision){show('conflict',{ok:false,message:'Hãy chạy bước 9 trước.'});return}const vals=Object.assign(zeroBM2(),S.bm2Values||{});vals.c03=Number(vals.c03||0)+1;const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2PreUpdateRevision,values:vals},{token:S.unitToken,portal:'unit_portal'});show('stale expected_revision',r,x=>x.ok===false&&x.errorCode==='CONFLICT_REVISION')}
+async function statusBM2(){const r=await api('getSubmissionStatus',{form_code:'BM2',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getSubmissionStatus BM2',r,x=>x.ok&&x.data?.submitted===true)}
+async function historyBM2(){const r=await api('getReportHistory',{form_code:'BM2',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getReportHistory BM2',r,x=>x.ok&&Array.isArray(x.data?.revisions)&&x.data.revisions.length>=1)}
+async function comparisonBM2(){const r=await api('getReportComparison',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getReportComparison BM2',r,x=>x.ok&&!!x.data?.comparison_map)}
+function bm4SeedDocs(){return [{document_order:1,document_type:'Quyết định',document_no:'GD4-TEST-01',document_date:'2026-08-27',document_title:'Văn bản kiểm thử GĐ4 số 01',issuing_agency:'UBND Phường An Xuyên',file_url_or_ref:'',document_note:'TEST GĐ4'},{document_order:2,document_type:'Kế hoạch',document_no:'GD4-TEST-02',document_date:'2026-08-27',document_title:'Văn bản kiểm thử GĐ4 số 02',issuing_agency:'UBND Phường An Xuyên',file_url_or_ref:'',document_note:'TEST GĐ4'}]}
+async function submitBM4(){const docs=bm4SeedDocs();const r=await api('submitReport',{form_code:'BM4',period_type:'QUARTER',period_key:period('BM4'),documents:docs},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm4Revision=Number(r.data.revision||0);document.getElementById('bm4State').textContent='revision='+S.bm4Revision+', bm4_set_id='+(r.data.bm4_set_id||'')}show('submit BM4 2 docs',r,x=>x.ok&&!!x.data?.bm4_set_id)}
+async function updateBM4(){await myReport('BM4','QUARTER');if(!S.bm4Revision||!S.bm4Docs?.length){show('update BM4',{ok:false,message:'Chưa có BM4 latest.'});return}const docs=S.bm4Docs.map((d,i)=>Object.assign({},d,{document_note:(d.document_note||'')+' | update GĐ4'}));const oldIds=docs.map(d=>d.document_id);const oldRev=S.bm4Revision;const r=await api('updateReport',{form_code:'BM4',period_type:'QUARTER',period_key:period('BM4'),expected_revision:oldRev,documents:docs},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm4Revision=Number(r.data.revision||0);await myReport('BM4','QUARTER');const newIds=(S.bm4Docs||[]).map(d=>d.document_id);r._smoke_document_ids_preserved=JSON.stringify(oldIds)===JSON.stringify(newIds)}show('update BM4 preserve document_id',r,x=>x.ok&&x.data?.revision===oldRev+1&&x._smoke_document_ids_preserved===true)}
+async function adminCallsUnitApi(){const r=await api('getMyReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2')},{token:S.adminToken,portal:'admin_portal'});show('Admin gọi API unit',r,x=>x.ok===false&&(x.errorCode==='WRONG_PORTAL'||x.errorCode==='FORBIDDEN'))}
+async function invalidNumber(){const vals=zeroBM2();vals.c02='1,000';const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2Revision||1,values:vals},{token:S.unitToken,portal:'unit_portal'});show('ambiguous number blocked',r,x=>x.ok===false&&x.errorCode==='VALIDATION_ERROR')}
+</script>
+</body></html>
