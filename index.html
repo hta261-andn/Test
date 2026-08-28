@@ -2,112 +2,107 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GĐ4 Smoke Test — BC Số liệu ANTT Cơ sở</title>
+<title>GĐ5 Smoke Test — Dashboard & Thống kê</title>
 <style>
-body{font-family:Arial,sans-serif;max-width:1100px;margin:20px auto;padding:0 12px;background:#f6f7f9;color:#1f2937}h1{font-size:23px}.card{background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:14px;margin:12px 0}input,select,button,textarea{font:inherit;padding:8px;margin:4px 2px}input[type=text],input[type=password]{min-width:300px;max-width:96%}button{cursor:pointer;border:1px solid #9ca3af;border-radius:7px;background:#fff}button:hover{background:#f0f2f5}.good{color:#087b37;font-weight:700}.bad{color:#b42318;font-weight:700}.warn{color:#9a6700;font-weight:700}pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;max-height:560px;overflow:auto}.small{font-size:13px;color:#4b5563}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}code{background:#eef2f7;padding:2px 4px;border-radius:4px}</style>
+body{font-family:Arial,sans-serif;max-width:1120px;margin:20px auto;padding:0 12px;background:#f6f7f9;color:#1f2937}
+h1{font-size:23px}.card{background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:14px;margin:12px 0}
+input,select,button{font:inherit;padding:8px;margin:4px 2px}input[type=text],input[type=password]{min-width:300px;max-width:96%}
+button{cursor:pointer;border:1px solid #9ca3af;border-radius:7px;background:#fff}button:hover{background:#f0f2f5}
+.good{color:#087b37;font-weight:700}.bad{color:#b42318;font-weight:700}.small{font-size:13px;color:#4b5563}
+pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;max-height:620px;overflow:auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
 </head>
 <body>
-<h1>GĐ4 — Smoke Test nghiệp vụ báo cáo BM1–BM4</h1>
-<p class="small">Token chỉ giữ trong bộ nhớ trang. Không hiển thị mật khẩu/token thật. Mặc định thử trên BM2 tháng 09/2026 và BM4 quý III/2026 của tài khoản Unit đang đăng nhập.</p>
+<h1>GĐ5 — Smoke Test Dashboard, thống kê & biểu đồ</h1>
+<p class="small">Chỉ đọc dữ liệu. Token chỉ giữ trong RAM của trang; mật khẩu/token không hiển thị trong kết quả.</p>
+
 <div class="card">
-  <b>Web App TEST</b><br>
-  <input id="url" type="text" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec">
-  <button onclick="health()">1. healthCheck</button>
+<b>Web App TEST</b><br>
+<input id="url" type="text" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec">
+<button onclick="health()">1. healthCheck</button>
+<button onclick="publicDash()">2. getPublicDashboard</button>
 </div>
+
 <div class="card">
-  <b>Unit</b><br>
-  <input id="unitLogin" type="text" value="AREA_001_01" placeholder="login Unit">
-  <input id="unitPass" type="password" placeholder="Mật khẩu hiện tại của Unit">
-  <button onclick="loginUnit()">2. loginUnit</button>
-  <button onclick="currentPeriods()">3. getCurrentPeriods</button>
-  <span id="unitState" class="small">Chưa đăng nhập.</span>
+<b>Unit AREA_001</b><br>
+<input id="unitLogin" type="text" value="AREA_001_01">
+<input id="unitPass" type="password" placeholder="Mật khẩu Unit hiện tại">
+<div class="row">
+<button onclick="loginUnit()">3. loginUnit</button>
+<button onclick="unitDashboard()">4. unitGetDashboard</button>
+<button onclick="dashPeriods()">5. getDashboardPeriodOptions BM2</button>
+<button onclick="unitReports()">6. getReports BM2</button>
+<button onclick="unitCompare()">7. getComparisonData c02</button>
+<button onclick="unitChart()">8. AREA_COMPARE c02</button>
 </div>
+<span id="unitState" class="small">Chưa đăng nhập.</span>
+</div>
+
 <div class="card">
-  <b>BM2 — tháng 09/2026</b>
-  <div class="row"><label>Period:</label><input id="bm2Period" value="2026-09" type="text"></div>
-  <div class="row">
-    <button onclick="formDef('BM2')">4. getFormDefinition</button>
-    <button onclick="periodOptions('BM2','MONTH')">5. getPeriodOptions</button>
-    <button onclick="timeFrame('BM2','MONTH')">6. getReportTimeFrame</button>
-    <button onclick="myReport('BM2','MONTH')">7. getMyReport</button>
-  </div>
-  <div class="row">
-    <button onclick="submitBM2()">8A. submit BM2 (c02..c16 = 0)</button>
-    <button onclick="retryBM2()">8B. retry cùng request_id</button>
-    <button onclick="updateBM2()">9. update BM2 (+1 c02)</button>
-    <button onclick="conflictBM2()">10. stale revision → CONFLICT</button>
-  </div>
-  <div class="row">
-    <button onclick="statusBM2()">11A. getSubmissionStatus</button>
-    <button onclick="historyBM2()">11B. getReportHistory</button>
-    <button onclick="comparisonBM2()">11C. getReportComparison</button>
-  </div>
-  <div id="bm2State" class="small">revision chưa biết.</div>
+<b>Admin / Superadmin</b><br>
+<input id="adminLogin" type="text" value="Admin">
+<input id="adminPass" type="password" placeholder="Mật khẩu Admin hiện tại">
+<div class="row">
+<button onclick="loginAdmin()">9. loginAdmin</button>
+<button onclick="adminDashboard()">10. adminGetDashboard</button>
+<button onclick="missing()">11. getMissingReports BM2</button>
+<button onclick="adminReports()">12. getReports toàn quyền</button>
+<button onclick="pie()">13. PIE_SUBMISSION_STATUS</button>
+<button onclick="logs()">14. adminGetLogs</button>
 </div>
+</div>
+
 <div class="card">
-  <b>BM4 — quý III/2026 (2 văn bản)</b>
-  <div class="row"><label>Period:</label><input id="bm4Period" value="2026-Q3" type="text"></div>
-  <div class="row">
-    <button onclick="formDef('BM4')">12A. getFormDefinition BM4</button>
-    <button onclick="myReport('BM4','QUARTER')">12B. getMyReport BM4</button>
-    <button onclick="submitBM4()">13. submit BM4 2 văn bản</button>
-    <button onclick="updateBM4()">14. update BM4 giữ document_id</button>
-  </div>
-  <div id="bm4State" class="small">revision chưa biết.</div>
+<b>Kiểm thử âm tính</b>
+<div class="row">
+<button onclick="unitCallsAdmin()">N1. Unit → adminGetDashboard</button>
+<button onclick="missingAggregation()">N2. getMissingReports kỳ tổng hợp Q3</button>
+<button onclick="invalidChart()">N3. chart_type sai</button>
 </div>
+</div>
+
 <div class="card">
-  <b>Kiểm thử âm tính tùy chọn</b><br>
-  <input id="adminLogin" type="text" value="Admin"><input id="adminPass" type="password" placeholder="Mật khẩu Admin hiện tại">
-  <button onclick="loginAdmin()">N1. loginAdmin</button>
-  <button onclick="adminCallsUnitApi()">N2. Admin → getMyReport phải WRONG_PORTAL</button>
-  <button onclick="invalidNumber()">N3. BM2 số mơ hồ 1,000 phải VALIDATION_ERROR</button>
+<div><b>Kết quả:</b> <span id="status">Chưa chạy.</span></div>
+<pre id="out">Chưa chạy.</pre>
 </div>
-<div class="card">
-  <div><b>Kết quả:</b> <span id="status">Chưa chạy.</span></div>
-  <pre id="out">Chưa chạy.</pre>
-</div>
+
 <script>
-const S={unitToken:'',adminToken:'',bm2Revision:0,bm2Values:null,bm2SubmitReq:'',bm2PreUpdateRevision:0,bm4Revision:0,bm4Docs:null};
-function rid(prefix='GD4'){return 'REQ_'+prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,11)}
+const S={unitToken:'',adminToken:''};
+function rid(p='GD5'){return 'REQ_'+p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,10)}
 function url(){return document.getElementById('url').value.trim()}
 function safe(x){
-  const secret=/password|token|hash|salt|pepper/i;
-  function walk(v,k=''){if(secret.test(k))return '[HIDDEN]';if(Array.isArray(v))return v.map(a=>walk(a));if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(key=>o[key]=walk(v[key],key));return o}return v}
-  return walk(x)
+ const secret=/password|token|hash|salt|pepper/i;
+ function walk(v,k=''){if(secret.test(k))return '[HIDDEN]';if(Array.isArray(v))return v.map(a=>walk(a));if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(key=>o[key]=walk(v[key],key));return o}return v}
+ return walk(x)
 }
 function show(label,res,expect){
-  let ok=expect?expect(res):!!res?.ok;
-  const st=document.getElementById('status');st.className=ok?'good':'bad';st.textContent=(ok?'PASS — ':'CHECK — ')+label;
-  document.getElementById('out').textContent=JSON.stringify(safe(res),null,2);
+ const ok=expect?expect(res):!!res?.ok, st=document.getElementById('status');
+ st.className=ok?'good':'bad';st.textContent=(ok?'PASS — ':'CHECK — ')+label;
+ document.getElementById('out').textContent=JSON.stringify(safe(res),null,2)
 }
 async function api(action,payload={},opt={}){
-  const req={action,request_id:opt.request_id||rid(action),token:opt.token||'',portal:opt.portal||'',payload,client_info:{source:'GD4_SMOKE_TEST_20260827',page_origin:location.origin}};
-  try{
-    const r=await fetch(url(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)});
-    const txt=await r.text();try{return JSON.parse(txt)}catch(e){return {ok:false,errorCode:'NON_JSON',message:txt.slice(0,1500)}}
-  }catch(e){return {ok:false,errorCode:'FETCH_ERROR',message:String(e)}}
+ const req={action,request_id:opt.request_id||rid(action),token:opt.token||'',portal:opt.portal||'',payload,client_info:{source:'GD5_SMOKE_TEST_20260827',page_origin:location.origin}};
+ try{const r=await fetch(url(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)});const t=await r.text();try{return JSON.parse(t)}catch(e){return {ok:false,errorCode:'NON_JSON',message:t.slice(0,1500)}}}
+ catch(e){return {ok:false,errorCode:'FETCH_ERROR',message:String(e)}}
 }
-async function health(){const r=await api('healthCheck');show('healthCheck',r,x=>x.ok&&x.data?.schemaOk===true)}
-async function loginUnit(){const r=await api('loginUnit',{login_input:document.getElementById('unitLogin').value,password:document.getElementById('unitPass').value},{portal:'unit_portal'});if(r.ok&&r.data?.token){S.unitToken=r.data.token;document.getElementById('unitState').textContent='Unit token đã lưu trong RAM; must_change_password='+String(r.data.must_change_password)}show('loginUnit',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
-async function loginAdmin(){const r=await api('loginAdmin',{login_input:document.getElementById('adminLogin').value,password:document.getElementById('adminPass').value},{portal:'admin_portal'});if(r.ok&&r.data?.token)S.adminToken=r.data.token;show('loginAdmin',r,x=>x.ok&&!!x.data?.token)}
-async function currentPeriods(){const r=await api('getCurrentPeriods',{}, {token:S.unitToken,portal:'unit_portal'});show('getCurrentPeriods',r,x=>x.ok&&Array.isArray(x.data?.periods));}
-function period(form){return document.getElementById(form==='BM4'?'bm4Period':'bm2Period').value.trim()}
-async function formDef(form){const r=await api('getFormDefinition',{form_code:form},{token:S.unitToken,portal:'unit_portal'});show('getFormDefinition '+form,r,x=>x.ok&&x.data?.field_count===(form==='BM2'?15:8))}
-async function periodOptions(form,ptype){const r=await api('getPeriodOptions',{form_code:form,period_type:ptype,year:'2026'},{token:S.unitToken,portal:'unit_portal'});show('getPeriodOptions '+form,r,x=>x.ok&&Array.isArray(x.data?.periods)&&x.data.periods.every(p=>p.is_submission_period===true))}
-async function timeFrame(form,ptype){const r=await api('getReportTimeFrame',{form_code:form,period_type:ptype,period_key:period(form)},{token:S.unitToken,portal:'unit_portal'});show('getReportTimeFrame '+form,r,x=>x.ok&&!!x.data?.range_text)}
-async function myReport(form,ptype){const r=await api('getMyReport',{form_code:form,period_type:ptype,period_key:period(form)},{token:S.unitToken,portal:'unit_portal'});if(r.ok){if(form==='BM2'){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=r.data.values||null;document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', status='+r.data.status+', can_edit='+r.data.can_edit}else{S.bm4Revision=Number(r.data.revision||0);S.bm4Docs=r.data.documents||[];document.getElementById('bm4State').textContent='revision='+S.bm4Revision+', status='+r.data.status+', docs='+(S.bm4Docs?.length||0)}}show('getMyReport '+form,r,x=>x.ok)}
-function zeroBM2(){const v={};for(let i=2;i<=16;i++)v['c'+String(i).padStart(2,'0')]=0;return v}
-async function submitBM2(){S.bm2SubmitReq=rid('BM2_SUBMIT');const r=await api('submitReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),values:zeroBM2()},{token:S.unitToken,portal:'unit_portal',request_id:S.bm2SubmitReq});if(r.ok){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=zeroBM2();document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', submit_status='+r.data.submit_status}show('submitReport BM2',r,x=>x.ok&&x.data?.revision===1)}
-async function retryBM2(){if(!S.bm2SubmitReq){show('retry BM2',{ok:false,message:'Chưa có request_id từ bước 8A.'});return}const r=await api('submitReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),values:zeroBM2()},{token:S.unitToken,portal:'unit_portal',request_id:S.bm2SubmitReq});show('retry same request_id',r,x=>x.ok===false&&x.errorCode==='DUPLICATE_REQUEST_HANDLED')}
-async function updateBM2(){if(!S.bm2Revision){await myReport('BM2','MONTH');if(!S.bm2Revision)return}const vals=Object.assign(zeroBM2(),S.bm2Values||{});vals.c02=Number(vals.c02||0)+1;S.bm2PreUpdateRevision=S.bm2Revision;const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2Revision,values:vals},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm2Revision=Number(r.data.revision||0);S.bm2Values=vals;document.getElementById('bm2State').textContent='revision='+S.bm2Revision+', previous_revision='+r.data.previous_revision}show('updateReport BM2',r,x=>x.ok&&x.data?.revision===S.bm2PreUpdateRevision+1)}
-async function conflictBM2(){if(!S.bm2PreUpdateRevision){show('conflict',{ok:false,message:'Hãy chạy bước 9 trước.'});return}const vals=Object.assign(zeroBM2(),S.bm2Values||{});vals.c03=Number(vals.c03||0)+1;const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2PreUpdateRevision,values:vals},{token:S.unitToken,portal:'unit_portal'});show('stale expected_revision',r,x=>x.ok===false&&x.errorCode==='CONFLICT_REVISION')}
-async function statusBM2(){const r=await api('getSubmissionStatus',{form_code:'BM2',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getSubmissionStatus BM2',r,x=>x.ok&&x.data?.submitted===true)}
-async function historyBM2(){const r=await api('getReportHistory',{form_code:'BM2',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getReportHistory BM2',r,x=>x.ok&&Array.isArray(x.data?.revisions)&&x.data.revisions.length>=1)}
-async function comparisonBM2(){const r=await api('getReportComparison',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2')},{token:S.unitToken,portal:'unit_portal'});show('getReportComparison BM2',r,x=>x.ok&&!!x.data?.comparison_map)}
-function bm4SeedDocs(){return [{document_order:1,document_type:'Quyết định',document_no:'GD4-TEST-01',document_date:'2026-08-27',document_title:'Văn bản kiểm thử GĐ4 số 01',issuing_agency:'UBND Phường An Xuyên',file_url_or_ref:'',document_note:'TEST GĐ4'},{document_order:2,document_type:'Kế hoạch',document_no:'GD4-TEST-02',document_date:'2026-08-27',document_title:'Văn bản kiểm thử GĐ4 số 02',issuing_agency:'UBND Phường An Xuyên',file_url_or_ref:'',document_note:'TEST GĐ4'}]}
-async function submitBM4(){const docs=bm4SeedDocs();const r=await api('submitReport',{form_code:'BM4',period_type:'QUARTER',period_key:period('BM4'),documents:docs},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm4Revision=Number(r.data.revision||0);document.getElementById('bm4State').textContent='revision='+S.bm4Revision+', bm4_set_id='+(r.data.bm4_set_id||'')}show('submit BM4 2 docs',r,x=>x.ok&&!!x.data?.bm4_set_id)}
-async function updateBM4(){await myReport('BM4','QUARTER');if(!S.bm4Revision||!S.bm4Docs?.length){show('update BM4',{ok:false,message:'Chưa có BM4 latest.'});return}const docs=S.bm4Docs.map((d,i)=>Object.assign({},d,{document_note:(d.document_note||'')+' | update GĐ4'}));const oldIds=docs.map(d=>d.document_id);const oldRev=S.bm4Revision;const r=await api('updateReport',{form_code:'BM4',period_type:'QUARTER',period_key:period('BM4'),expected_revision:oldRev,documents:docs},{token:S.unitToken,portal:'unit_portal'});if(r.ok){S.bm4Revision=Number(r.data.revision||0);await myReport('BM4','QUARTER');const newIds=(S.bm4Docs||[]).map(d=>d.document_id);r._smoke_document_ids_preserved=JSON.stringify(oldIds)===JSON.stringify(newIds)}show('update BM4 preserve document_id',r,x=>x.ok&&x.data?.revision===oldRev+1&&x._smoke_document_ids_preserved===true)}
-async function adminCallsUnitApi(){const r=await api('getMyReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2')},{token:S.adminToken,portal:'admin_portal'});show('Admin gọi API unit',r,x=>x.ok===false&&(x.errorCode==='WRONG_PORTAL'||x.errorCode==='FORBIDDEN'))}
-async function invalidNumber(){const vals=zeroBM2();vals.c02='1,000';const r=await api('updateReport',{form_code:'BM2',period_type:'MONTH',period_key:period('BM2'),expected_revision:S.bm2Revision||1,values:vals},{token:S.unitToken,portal:'unit_portal'});show('ambiguous number blocked',r,x=>x.ok===false&&x.errorCode==='VALIDATION_ERROR')}
+async function health(){const r=await api('healthCheck');show('healthCheck GĐ5',r,x=>x.ok&&x.data?.schemaOk===true&&String(x.data?.deploymentVersion||'').includes('GD5_DASHBOARD_STATISTICS'))}
+async function publicDash(){const r=await api('getPublicDashboard');const s=JSON.stringify(r);show('getPublicDashboard',r,x=>x.ok&&!!x.data?.app_name&&!/password_hash|token_hash|before_json|after_json/.test(s)&&!Array.isArray(x.data?.missing))}
+async function loginUnit(){const r=await api('loginUnit',{login_input:document.getElementById('unitLogin').value,password:document.getElementById('unitPass').value},{portal:'unit_portal'});if(r.ok&&r.data?.token){S.unitToken=r.data.token;document.getElementById('unitState').textContent='Unit token đã lưu RAM.'}show('loginUnit',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
+async function unitDashboard(){const r=await api('unitGetDashboard',{},{token:S.unitToken,portal:'unit_portal'});show('unitGetDashboard',r,x=>x.ok&&x.data?.profile?.area_id==='AREA_001'&&Array.isArray(x.data?.current_periods)&&x.data?.scope?.area_ids?.length===1)}
+async function dashPeriods(){const r=await api('getDashboardPeriodOptions',{form_code:'BM2'},{token:S.unitToken,portal:'unit_portal'});show('getDashboardPeriodOptions',r,x=>x.ok&&Array.isArray(x.data?.periods)&&x.data.periods.length>0&&x.data.periods.every(p=>p.is_aggregation_period===true))}
+async function unitReports(){const r=await api('getReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('getReports unit',r,x=>x.ok&&x.data?.total===1&&x.data?.reports?.[0]?.area_id==='AREA_001'&&x.data?.reports?.[0]?.revision===2)}
+async function unitCompare(){const r=await api('getComparisonData',{form_code:'BM2',field_key:'c02',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('getComparisonData unit',r,x=>x.ok&&Array.isArray(x.data?.comparison_rows)&&x.data.comparison_rows.length===1&&x.data.comparison_rows[0].area_id==='AREA_001'&&x.data.comparison_rows[0].previous_available===false&&x.data.comparison_rows[0].previous_value===null)}
+async function unitChart(){const r=await api('getChartsData',{chart_type:'AREA_COMPARE',form_code:'BM2',field_key:'c02',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('AREA_COMPARE unit',r,x=>x.ok&&x.data?.labels?.length===1&&x.data?.datasets?.[0]?.data?.[0]===1)}
+async function loginAdmin(){const r=await api('loginAdmin',{login_input:document.getElementById('adminLogin').value,password:document.getElementById('adminPass').value},{portal:'admin_portal'});if(r.ok&&r.data?.token)S.adminToken=r.data.token;show('loginAdmin',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
+async function adminDashboard(){const r=await api('adminGetDashboard',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('adminGetDashboard',r,x=>x.ok&&x.data?.scope?.area_count===64&&x.data?.submission?.reported_count>=1)}
+async function missing(){const r=await api('getMissingReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('getMissingReports',r,x=>x.ok&&x.data?.total_scope===64&&x.data?.reported_count===1&&x.data?.missing_count===63)}
+async function adminReports(){const r=await api('getReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('getReports admin',r,x=>x.ok&&x.data?.total===1&&x.data?.reports?.[0]?.revision===2)}
+async function pie(){const r=await api('getChartsData',{chart_type:'PIE_SUBMISSION_STATUS',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('PIE_SUBMISSION_STATUS',r,x=>x.ok&&x.data?.labels?.length===5&&x.data?.datasets?.[0]?.data?.reduce((a,b)=>a+b,0)===64)}
+async function logs(){const r=await api('adminGetLogs',{form_code:'BM2',limit:20,include_json:true},{token:S.adminToken,portal:'admin_portal'});const s=JSON.stringify(r);show('adminGetLogs',r,x=>x.ok&&x.data?.sensitive_fields_masked===true&&Array.isArray(x.data?.logs)&&!/password_hash|token_hash/.test(s))}
+async function unitCallsAdmin(){const r=await api('adminGetDashboard',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('Unit → adminGetDashboard',r,x=>x.ok===false&&(x.errorCode==='WRONG_PORTAL'||x.errorCode==='FORBIDDEN'))}
+async function missingAggregation(){const r=await api('getMissingReports',{form_code:'BM2',period_type:'QUARTER',period_key:'2026-Q3'},{token:S.adminToken,portal:'admin_portal'});show('missing on aggregation period',r,x=>x.ok===false&&x.errorCode==='INVALID_REQUEST')}
+async function invalidChart(){const r=await api('getChartsData',{chart_type:'BAD_CHART',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('invalid chart_type',r,x=>x.ok===false&&x.errorCode==='INVALID_REQUEST')}
 </script>
-</body></html>
+</body>
+</html>
