@@ -101,11 +101,11 @@ const CONFIG={
   APP_NAME:'BÁO CÁO SỐ LIỆU CÔNG TÁC LỰC LƯỢNG ANTT CƠ SỞ',
   OWNER_UNIT:'Đội Xây dựng phong trào toàn dân bảo vệ ANTQ, Phòng Tham mưu, Công an tỉnh Cà Mau',
   REQUEST_TIMEOUT_MS:45000,
-  FRONTEND_VERSION:'GD7_FRONTEND_CANDIDATE_20260828',
+  FRONTEND_VERSION:'GD7_FRONTEND_CANDIDATE_V2_20260828',
   EXPECTED_BACKEND_PREFIX:'GD6_SUPERADMIN_EXPORT_RETENTION_CANDIDATE_V2_20260828'
 };
 const FORMS=['BM1','BM2','BM3','BM4'];
-const PORTALS={unit:'unit_portal',admin:'admin_portal'};
+const PORTALS={UNIT:'unit_portal',ADMIN:'admin_portal'};
 const STORAGE={unit:'antt_unit_session_v1',admin:'antt_admin_session_v1'};
 const TRANSIENT_ERRORS=new Set(['SERVER_BUSY','LOCK_TIMEOUT','RATE_LIMITED','FETCH_ERROR','NON_JSON']);
 const AUTH_ERRORS=new Set(['INVALID_TOKEN','TOKEN_EXPIRED']);
@@ -121,7 +121,7 @@ function escapeHTML(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function truthy(v){if(v===true||v===1)return true;const s=String(v??'').trim().toLowerCase();return ['1','true','yes','y','on'].includes(s)}
 function debounce(fn,ms=280){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
 function requestId(prefix='REQ'){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,10)}`}
-function safeClientInfo(){return{source:'GD7_FRONTEND_20260828',frontend_version:CONFIG.FRONTEND_VERSION,page_origin:location.origin||'',path:location.pathname||'',user_agent:(navigator.userAgent||'').slice(0,300)}}
+function safeClientInfo(){return{source:'GD7_FRONTEND_V2_20260828',frontend_version:CONFIG.FRONTEND_VERSION,page_origin:location.origin||'',path:location.pathname||'',user_agent:(navigator.userAgent||'').slice(0,300)}}
 function tokenKey(portal){return portal===PORTALS.UNIT?STORAGE.unit:STORAGE.admin}
 function saveToken(data){const item={token:data.token,expires_at:data.expires_at,portal:data.portal,role:data.role,user_summary:data.user_summary,permissions:data.permissions,must_change_password:!!data.must_change_password};sessionStorage.setItem(tokenKey(data.portal),JSON.stringify(item));return item}
 function getToken(portal){try{const raw=sessionStorage.getItem(tokenKey(portal));return raw?JSON.parse(raw):null}catch(_){return null}}
