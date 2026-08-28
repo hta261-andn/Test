@@ -2,64 +2,76 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GĐ5 Smoke Test — Dashboard & Thống kê</title>
+<title>GĐ6 Smoke Test — Superadmin / Export / Backup / Retention</title>
 <style>
-body{font-family:Arial,sans-serif;max-width:1120px;margin:20px auto;padding:0 12px;background:#f6f7f9;color:#1f2937}
+body{font-family:Arial,sans-serif;max-width:1180px;margin:20px auto;padding:0 12px;background:#f6f7f9;color:#1f2937}
 h1{font-size:23px}.card{background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:14px;margin:12px 0}
-input,select,button{font:inherit;padding:8px;margin:4px 2px}input[type=text],input[type=password]{min-width:300px;max-width:96%}
+input,select,button{font:inherit;padding:8px;margin:4px 2px}input[type=text],input[type=password]{min-width:310px;max-width:96%}
 button{cursor:pointer;border:1px solid #9ca3af;border-radius:7px;background:#fff}button:hover{background:#f0f2f5}
-.good{color:#087b37;font-weight:700}.bad{color:#b42318;font-weight:700}.small{font-size:13px;color:#4b5563}
-pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;max-height:620px;overflow:auto}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.good{color:#087b37;font-weight:700}.bad{color:#b42318;font-weight:700}.warn{color:#9a6700;font-weight:700}.small{font-size:13px;color:#4b5563}
+pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;max-height:680px;overflow:auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.danger{border-color:#d92d20;color:#b42318}.safe{border-color:#2e7d32}
 </style>
 </head>
 <body>
-<h1>GĐ5 — Smoke Test Dashboard, thống kê & biểu đồ</h1>
-<p class="small">Chỉ đọc dữ liệu. Token chỉ giữ trong RAM của trang; mật khẩu/token không hiển thị trong kết quả.</p>
+<h1>GĐ6 — Smoke Test Superadmin, XLSX, backup & retention</h1>
+<p class="small"><b>Nguyên tắc:</b> smoke mặc định chỉ chạy thao tác an toàn: đọc, preview, TEST_EXPORT và tạo backup. Không có nút EXECUTE cho annualClose, clear dữ liệu, update kỳ hay purge thật.</p>
 
 <div class="card">
 <b>Web App TEST</b><br>
 <input id="url" type="text" value="https://script.google.com/macros/s/AKfycby9nG75xkqsUjbGkUc64urrLtmE4kQedN9RkZgZ1qCUAaIT6_cM2nScHLyKoH8-x4je/exec">
-<button onclick="health()">1. healthCheck</button>
-<button onclick="publicDash()">2. getPublicDashboard</button>
+<button onclick="health()">1. healthCheck GĐ6</button>
 </div>
 
 <div class="card">
-<b>Unit AREA_001</b><br>
-<input id="unitLogin" type="text" value="AREA_001_01">
-<input id="unitPass" type="password" placeholder="Mật khẩu Unit hiện tại">
-<div class="row">
-<button onclick="loginUnit()">3. loginUnit</button>
-<button onclick="unitDashboard()">4. unitGetDashboard</button>
-<button onclick="dashPeriods()">5. getDashboardPeriodOptions BM2</button>
-<button onclick="unitReports()">6. getReports BM2</button>
-<button onclick="unitCompare()">7. getComparisonData c02</button>
-<button onclick="unitChart()">8. AREA_COMPARE c02</button>
-</div>
-<span id="unitState" class="small">Chưa đăng nhập.</span>
-</div>
-
-<div class="card">
-<b>Admin / Superadmin</b><br>
+<b>Superadmin</b><br>
 <input id="adminLogin" type="text" value="Admin">
 <input id="adminPass" type="password" placeholder="Mật khẩu Admin hiện tại">
 <div class="row">
-<button onclick="loginAdmin()">9. loginAdmin</button>
-<button onclick="adminDashboard()">10. adminGetDashboard</button>
-<button onclick="missing()">11. getMissingReports BM2</button>
-<button onclick="adminReports()">12. getReports toàn quyền</button>
-<button onclick="pie()">13. PIE_SUBMISSION_STATUS</button>
-<button onclick="logs()">14. adminGetLogs</button>
+<button onclick="loginAdmin()">2. loginAdmin</button>
+<button onclick="phase6()">3. selfTestPhase6</button>
+<button onclick="previewExport()">4. previewExport TEST_EXPORT</button>
+<button class="safe" onclick="testExport()">5. TEST_EXPORT XLSX</button>
+<button onclick="exportLogs()">6. getExportLogs</button>
+</div>
+<div class="row">
+<button class="safe" onclick="backup()">7. exportBackupBeforeClear</button>
+<button onclick="backupList()">8. getBackupList</button>
+<button onclick="backupMeta()">9. getBackupMetadata latest</button>
+</div>
+<div class="row">
+<button onclick="retentionPolicy()">10. checkRetentionPolicy</button>
+<button onclick="retentionDry()">11. retentionDryRun 2026</button>
+<button onclick="annualStatus()">12. getAnnualCloseStatus 2026</button>
+<button onclick="restoreGuide()">13. manualRestoreGuide</button>
+</div>
+<div class="row">
+<button onclick="periodPreview()">14. previewPeriodConfigChange</button>
+<button onclick="regenPreview()">15. regenerateKyBaoCao PREVIEW 2027</button>
+</div>
+<span id="adminState" class="small">Chưa đăng nhập.</span>
+</div>
+
+<div class="card">
+<b>Unit cho kiểm thử vượt quyền</b><br>
+<input id="unitLogin" type="text" value="AREA_001_01">
+<input id="unitPass" type="password" placeholder="Mật khẩu Unit hiện tại">
+<div class="row">
+<button onclick="loginUnit()">U1. loginUnit</button>
+<button onclick="unitPreviewExport()">N1. Unit → previewExport</button>
 </div>
 </div>
 
 <div class="card">
-<b>Kiểm thử âm tính</b>
+<b>Kiểm thử âm tính an toàn</b>
 <div class="row">
-<button onclick="unitCallsAdmin()">N1. Unit → adminGetDashboard</button>
-<button onclick="missingAggregation()">N2. getMissingReports kỳ tổng hợp Q3</button>
-<button onclick="invalidChart()">N3. chart_type sai</button>
+<button onclick="exportNoConfirm()">N2. exportReports thiếu confirm</button>
+<button onclick="clearFakeBackup()">N3. clearData fake backup</button>
+<button onclick="archiveOpenYear()">N4. archive năm OPEN</button>
+<button onclick="invalidExportType()">N5. export_type sai</button>
+<button onclick="regenNoPreview()">N6. regenerate EXECUTE thiếu preview</button>
 </div>
+<p class="small">N3/N4 có xác minh mật khẩu và consume confirm_token nhưng backend phải dừng trước khi sửa dữ liệu.</p>
 </div>
 
 <div class="card">
@@ -68,9 +80,9 @@ pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;
 </div>
 
 <script>
-const S={unitToken:'',adminToken:''};
-function rid(p='GD5'){return 'REQ_'+p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,10)}
-function url(){return document.getElementById('url').value.trim()}
+const S={adminToken:'',unitToken:'',lastBackupExportId:'',lastBackupCode:'',lastExportId:'',lastDryRunId:''};
+function rid(p='GD6'){return 'REQ_'+p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,10)}
+function baseUrl(){return document.getElementById('url').value.trim()}
 function safe(x){
  const secret=/password|token|hash|salt|pepper/i;
  function walk(v,k=''){if(secret.test(k))return '[HIDDEN]';if(Array.isArray(v))return v.map(a=>walk(a));if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(key=>o[key]=walk(v[key],key));return o}return v}
@@ -82,27 +94,54 @@ function show(label,res,expect){
  document.getElementById('out').textContent=JSON.stringify(safe(res),null,2)
 }
 async function api(action,payload={},opt={}){
- const req={action,request_id:opt.request_id||rid(action),token:opt.token||'',portal:opt.portal||'',payload,client_info:{source:'GD5_SMOKE_TEST_20260827',page_origin:location.origin}};
- try{const r=await fetch(url(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)});const t=await r.text();try{return JSON.parse(t)}catch(e){return {ok:false,errorCode:'NON_JSON',message:t.slice(0,1500)}}}
+ const req={action,request_id:opt.request_id||rid(action),token:opt.token||'',portal:opt.portal||'',payload,client_info:{source:'GD6_SMOKE_TEST_20260828',page_origin:location.origin}};
+ try{const r=await fetch(baseUrl(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(req)});const t=await r.text();try{return JSON.parse(t)}catch(e){return {ok:false,errorCode:'NON_JSON',message:t.slice(0,1500)}}}
  catch(e){return {ok:false,errorCode:'FETCH_ERROR',message:String(e)}}
 }
-async function health(){const r=await api('healthCheck');show('healthCheck GĐ5',r,x=>x.ok&&x.data?.schemaOk===true&&String(x.data?.deploymentVersion||'').includes('GD5_DASHBOARD_STATISTICS'))}
-async function publicDash(){const r=await api('getPublicDashboard');const s=JSON.stringify(r);show('getPublicDashboard',r,x=>x.ok&&!!x.data?.app_name&&!/password_hash|token_hash|before_json|after_json/.test(s)&&!Array.isArray(x.data?.missing))}
-async function loginUnit(){const r=await api('loginUnit',{login_input:document.getElementById('unitLogin').value,password:document.getElementById('unitPass').value},{portal:'unit_portal'});if(r.ok&&r.data?.token){S.unitToken=r.data.token;document.getElementById('unitState').textContent='Unit token đã lưu RAM.'}show('loginUnit',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
-async function unitDashboard(){const r=await api('unitGetDashboard',{},{token:S.unitToken,portal:'unit_portal'});show('unitGetDashboard',r,x=>x.ok&&x.data?.profile?.area_id==='AREA_001'&&Array.isArray(x.data?.current_periods)&&x.data?.scope?.area_ids?.length===1)}
-async function dashPeriods(){const r=await api('getDashboardPeriodOptions',{form_code:'BM2'},{token:S.unitToken,portal:'unit_portal'});show('getDashboardPeriodOptions',r,x=>x.ok&&Array.isArray(x.data?.periods)&&x.data.periods.length>0&&x.data.periods.every(p=>p.is_aggregation_period===true))}
-async function unitReports(){const r=await api('getReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('getReports unit',r,x=>x.ok&&x.data?.total===1&&x.data?.reports?.[0]?.area_id==='AREA_001'&&x.data?.reports?.[0]?.revision===2)}
-async function unitCompare(){const r=await api('getComparisonData',{form_code:'BM2',field_key:'c02',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('getComparisonData unit',r,x=>x.ok&&Array.isArray(x.data?.comparison_rows)&&x.data.comparison_rows.length===1&&x.data.comparison_rows[0].area_id==='AREA_001'&&x.data.comparison_rows[0].previous_available===false&&x.data.comparison_rows[0].previous_value===null)}
-async function unitChart(){const r=await api('getChartsData',{chart_type:'AREA_COMPARE',form_code:'BM2',field_key:'c02',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('AREA_COMPARE unit',r,x=>x.ok&&x.data?.labels?.length===1&&x.data?.datasets?.[0]?.data?.[0]===1)}
-async function loginAdmin(){const r=await api('loginAdmin',{login_input:document.getElementById('adminLogin').value,password:document.getElementById('adminPass').value},{portal:'admin_portal'});if(r.ok&&r.data?.token)S.adminToken=r.data.token;show('loginAdmin',r,x=>x.ok&&!!x.data?.token&&x.data?.must_change_password===false)}
-async function adminDashboard(){const r=await api('adminGetDashboard',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('adminGetDashboard',r,x=>x.ok&&x.data?.scope?.area_count===64&&x.data?.submission?.reported_count>=1)}
-async function missing(){const r=await api('getMissingReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('getMissingReports',r,x=>x.ok&&x.data?.total_scope===64&&x.data?.reported_count===1&&x.data?.missing_count===63)}
-async function adminReports(){const r=await api('getReports',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('getReports admin',r,x=>x.ok&&x.data?.total===1&&x.data?.reports?.[0]?.revision===2)}
-async function pie(){const r=await api('getChartsData',{chart_type:'PIE_SUBMISSION_STATUS',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('PIE_SUBMISSION_STATUS',r,x=>x.ok&&x.data?.labels?.length===5&&x.data?.datasets?.[0]?.data?.reduce((a,b)=>a+b,0)===64)}
-async function logs(){const r=await api('adminGetLogs',{form_code:'BM2',limit:20,include_json:true},{token:S.adminToken,portal:'admin_portal'});const s=JSON.stringify(r);show('adminGetLogs',r,x=>x.ok&&x.data?.sensitive_fields_masked===true&&Array.isArray(x.data?.logs)&&!/password_hash|token_hash/.test(s))}
-async function unitCallsAdmin(){const r=await api('adminGetDashboard',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('Unit → adminGetDashboard',r,x=>x.ok===false&&(x.errorCode==='WRONG_PORTAL'||x.errorCode==='FORBIDDEN'))}
-async function missingAggregation(){const r=await api('getMissingReports',{form_code:'BM2',period_type:'QUARTER',period_key:'2026-Q3'},{token:S.adminToken,portal:'admin_portal'});show('missing on aggregation period',r,x=>x.ok===false&&x.errorCode==='INVALID_REQUEST')}
-async function invalidChart(){const r=await api('getChartsData',{chart_type:'BAD_CHART',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('invalid chart_type',r,x=>x.ok===false&&x.errorCode==='INVALID_REQUEST')}
+async function confirm(scope){
+ const pw=document.getElementById('adminPass').value;
+ return api('verifyPasswordForSensitiveAction',{password:pw,scope},{token:S.adminToken,portal:'admin_portal'});
+}
+async function health(){const r=await api('healthCheck');show('healthCheck GĐ6',r,x=>x.ok&&x.data?.schemaOk===true&&String(x.data?.deploymentVersion||'').includes('GD6_SUPERADMIN_EXPORT_RETENTION'))}
+async function loginAdmin(){const r=await api('loginAdmin',{login_input:document.getElementById('adminLogin').value,password:document.getElementById('adminPass').value},{portal:'admin_portal'});if(r.ok&&r.data?.token){S.adminToken=r.data.token;document.getElementById('adminState').textContent='Superadmin token lưu trong RAM.'}show('loginAdmin',r,x=>x.ok&&!!x.data?.token&&x.data?.user_summary?.role==='superadmin')}
+async function loginUnit(){const r=await api('loginUnit',{login_input:document.getElementById('unitLogin').value,password:document.getElementById('unitPass').value},{portal:'unit_portal'});if(r.ok&&r.data?.token)S.unitToken=r.data.token;show('loginUnit',r,x=>x.ok&&!!x.data?.token)}
+async function phase6(){const r=await api('selfTestPhase6',{}, {token:S.adminToken,portal:'admin_portal'});show('selfTestPhase6',r,x=>x.ok&&x.data?.ok===true&&x.data?.failed===0)}
+async function previewExport(){const r=await api('previewExport',{export_type:'TEST_EXPORT',form_code:'BM2',area_scope:'ALL',period_type:'MONTH',period_key:'2026-09',latest_only:true},{token:S.adminToken,portal:'admin_portal'});show('previewExport TEST_EXPORT',r,x=>x.ok&&x.data?.creates_file===false&&x.data?.row_count>=1)}
+async function testExport(){
+ const c=await confirm('EXPORT_REPORTS');if(!c.ok||!c.data?.confirm_token)return show('confirm EXPORT_REPORTS',c,x=>false);
+ const r=await api('exportReports',{confirm_token:c.data.confirm_token,export_type:'TEST_EXPORT',form_code:'BM2',area_scope:'ALL',period_type:'MONTH',period_key:'2026-09',latest_only:true,include_logs:false},{token:S.adminToken,portal:'admin_portal'});
+ if(r.ok){S.lastExportId=r.data?.export_id||''}
+ show('TEST_EXPORT XLSX',r,x=>x.ok&&x.data?.export_status==='SUCCESS'&&String(x.data?.file_name||'').endsWith('.xlsx')&&!!x.data?.file_url)
+}
+async function exportLogs(){const r=await api('getExportLogs',{limit:20},{token:S.adminToken,portal:'admin_portal'});show('getExportLogs',r,x=>x.ok&&Array.isArray(x.data?.exports)&&x.data.exports.length>=1)}
+async function backup(){
+ const c=await confirm('EXPORT_BACKUP');if(!c.ok||!c.data?.confirm_token)return show('confirm EXPORT_BACKUP',c,x=>false);
+ const r=await api('exportBackupBeforeClear',{confirm_token:c.data.confirm_token,export_type:'BACKUP_FULL',reason:'GD6 smoke-test backup an toàn trước clear'},{token:S.adminToken,portal:'admin_portal'});
+ if(r.ok){S.lastBackupExportId=r.data?.backup_export_id||'';S.lastBackupCode=r.data?.backup_code||''}
+ show('exportBackupBeforeClear',r,x=>x.ok&&x.data?.export_status==='SUCCESS'&&x.data?.backup_for_clear===true&&x.data?.sensitive_fields_masked===true&&String(x.data?.file_name||'').endsWith('.xlsx'))
+}
+async function backupList(){const r=await api('getBackupList',{limit:20},{token:S.adminToken,portal:'admin_portal'});if(r.ok&&r.data?.backups?.[0]){S.lastBackupExportId=S.lastBackupExportId||r.data.backups[0].backup_export_id;S.lastBackupCode=S.lastBackupCode||r.data.backups[0].backup_code}show('getBackupList',r,x=>x.ok&&Array.isArray(x.data?.backups)&&x.data.backups.length>=1)}
+async function backupMeta(){const r=await api('getBackupMetadata',{backup_export_id:S.lastBackupExportId},{token:S.adminToken,portal:'admin_portal'});show('getBackupMetadata',r,x=>x.ok&&x.data?.status==='SUCCESS'&&x.data?.backup_for_clear===true&&x.data?.sensitive_fields_masked===true)}
+async function retentionPolicy(){const r=await api('checkRetentionPolicy',{}, {token:S.adminToken,portal:'admin_portal'});show('checkRetentionPolicy',r,x=>x.ok&&x.data?.retention_years===3&&x.data?.auto_purge===false)}
+async function retentionDry(){const r=await api('retentionDryRun',{data_year:2026},{token:S.adminToken,portal:'admin_portal'});if(r.ok)S.lastDryRunId=r.data?.dry_run_id||'';show('retentionDryRun 2026',r,x=>x.ok&&x.data?.executes_delete===false&&x.data?.data_year==='2026')}
+async function annualStatus(){const r=await api('getAnnualCloseStatus',{data_year:2026},{token:S.adminToken,portal:'admin_portal'});show('getAnnualCloseStatus',r,x=>x.ok&&x.data?.years?.[0]?.year_status==='OPEN')}
+async function restoreGuide(){const r=await api('manualRestoreGuide',{backup_export_id:S.lastBackupExportId},{token:S.adminToken,portal:'admin_portal'});show('manualRestoreGuide',r,x=>x.ok&&x.data?.automatic_restore===false&&Array.isArray(x.data?.steps)&&x.data.steps.length>=5)}
+async function periodPreview(){const r=await api('previewPeriodConfigChange',{form_code:'BM2',period_type:'MONTH',period_key:'2026-09',changes:{note:'GD6_PREVIEW_ONLY'}},{token:S.adminToken,portal:'admin_portal'});show('previewPeriodConfigChange',r,x=>x.ok&&!!x.data?.preview_id&&x.data?.historical_submit_status_recalculated===false)}
+async function regenPreview(){const r=await api('regenerateKyBaoCao',{mode:'PREVIEW',data_year:2027,form_codes:['BM2'],period_types:['MONTH']},{token:S.adminToken,portal:'admin_portal'});show('regenerateKyBaoCao PREVIEW 2027',r,x=>x.ok&&x.data?.mode==='PREVIEW'&&x.data?.to_create_count===12&&x.data?.to_create?.every(p=>p.is_submission_period===true&&p.is_aggregation_period===true))}
+async function unitPreviewExport(){const r=await api('previewExport',{export_type:'TEST_EXPORT',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.unitToken,portal:'unit_portal'});show('Unit → previewExport',r,x=>x.ok===false&&(x.errorCode==='WRONG_PORTAL'||x.errorCode==='FORBIDDEN'))}
+async function exportNoConfirm(){const r=await api('exportReports',{export_type:'TEST_EXPORT',form_code:'BM2',period_type:'MONTH',period_key:'2026-09'},{token:S.adminToken,portal:'admin_portal'});show('exportReports thiếu confirm',r,x=>x.ok===false&&(x.errorCode==='SUPERADMIN_CONFIRM_REQUIRED'||x.errorCode==='CONFIRM_TOKEN_INVALID'))}
+async function clearFakeBackup(){
+ const c=await confirm('CLEAR_DATA_AFTER_BACKUP');if(!c.ok||!c.data?.confirm_token)return show('confirm CLEAR_DATA',c,x=>false);
+ const r=await api('clearDataAfterBackup',{confirm_token:c.data.confirm_token,backup_export_id:'EXP_NOT_EXIST',data_year:2026,form_codes:['BM2'],reason:'negative smoke only'},{token:S.adminToken,portal:'admin_portal'});
+ show('clearData fake backup',r,x=>x.ok===false&&(x.errorCode==='BACKUP_NOT_FOUND'||x.errorCode==='BACKUP_REQUIRED'))
+}
+async function archiveOpenYear(){
+ const c=await confirm('ANNUAL_ARCHIVE_EXPORT');if(!c.ok||!c.data?.confirm_token)return show('confirm ANNUAL_ARCHIVE',c,x=>false);
+ const r=await api('exportAnnualArchive',{confirm_token:c.data.confirm_token,data_year:2026},{token:S.adminToken,portal:'admin_portal'});
+ show('archive năm OPEN',r,x=>x.ok===false&&x.errorCode==='YEAR_NOT_CLOSED')
+}
+async function invalidExportType(){const r=await api('previewExport',{export_type:'BAD_EXPORT'},{token:S.adminToken,portal:'admin_portal'});show('invalid export_type',r,x=>x.ok===false&&x.errorCode==='INVALID_REQUEST')}
+async function regenNoPreview(){const r=await api('regenerateKyBaoCao',{mode:'EXECUTE',data_year:2027,form_codes:['BM2'],period_types:['MONTH'],reason:'negative only'},{token:S.adminToken,portal:'admin_portal'});show('regenerate thiếu preview',r,x=>x.ok===false&&x.errorCode==='DRY_RUN_REQUIRED')}
 </script>
 </body>
 </html>
